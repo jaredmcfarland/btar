@@ -98,8 +98,8 @@ function hasTypescriptDependency(packageJsonPath: string): boolean {
     const content = readFileSync(packageJsonPath, "utf-8");
     const pkg = JSON.parse(content);
 
-    const hasDep = (deps: Record<string, string> | undefined) =>
-      deps && "typescript" in deps;
+    const hasDep = (deps: Record<string, string> | undefined): boolean =>
+      deps !== undefined && "typescript" in deps;
 
     return hasDep(pkg.dependencies) || hasDep(pkg.devDependencies);
   } catch {
