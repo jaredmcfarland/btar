@@ -5,6 +5,7 @@
 
 import { Command } from "commander";
 import { VERSION } from "./index.js";
+import { analyzeCommand } from "./commands/analyze.js";
 
 const program = new Command();
 
@@ -14,14 +15,17 @@ program
   .version(VERSION);
 
 program
-  .command("analyze")
+  .command("analyze <directory>")
   .description("Analyze codebase for agent-readiness")
-  .argument("[directory]", "Directory to analyze", ".")
-  .action((directory) => {
-    console.log(`Analyzing ${directory}...`);
-    console.log("Not implemented yet");
+  .option("-q, --quiet", "Suppress progress output")
+  .option("-c, --config <path>", "Path to config file")
+  .action(async (directory, options) => {
+    await analyzeCommand(directory, options);
   });
 
-program.parse();
+program.parseAsync(process.argv).catch((error) => {
+  console.error("Error:", error.message);
+  process.exit(1);
+});
 
 export { program };
