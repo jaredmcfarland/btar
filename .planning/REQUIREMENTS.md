@@ -9,13 +9,13 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: User can run BTAR from command line with `btar` command
-- [ ] **INFRA-02**: User can analyze TypeScript, Python, Swift, Kotlin, Go, Java, Ruby, PHP codebases
+- [x] **INFRA-01**: User can run BTAR from command line with `btar` command
+- [x] **INFRA-02**: User can analyze TypeScript, Python, Swift, Kotlin, Go, Java, Ruby, PHP codebases
 - [ ] **INFRA-03**: User can run BTAR in GitHub Actions CI pipeline
-- [ ] **INFRA-04**: User can configure thresholds and exclusions via `.btar.yaml`
+- [x] **INFRA-04**: User can configure thresholds and exclusions via `.btar.yaml`
 - [ ] **INFRA-05**: User receives JSON output for integration with other tools
 - [ ] **INFRA-06**: User receives non-zero exit code when quality gates fail
-- [ ] **INFRA-07**: User sees progress output during analysis
+- [x] **INFRA-07**: User sees progress output during analysis
 
 ### Metrics
 
@@ -78,13 +78,13 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 1 | Pending |
-| INFRA-02 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
+| INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 3 | Pending |
-| INFRA-04 | Phase 1 | Pending |
+| INFRA-04 | Phase 1 | Complete |
 | INFRA-05 | Phase 3 | Pending |
 | INFRA-06 | Phase 3 | Pending |
-| INFRA-07 | Phase 1 | Pending |
+| INFRA-07 | Phase 1 | Complete |
 | METR-01 | Phase 2 | Pending |
 | METR-02 | Phase 2 | Pending |
 | METR-03 | Phase 2 | Pending |
@@ -105,4 +105,4 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 ---
 *Requirements defined: 2026-01-15*
-*Last updated: 2026-01-15 after roadmap creation*
+*Last updated: 2026-01-16 after Phase 1 completion*

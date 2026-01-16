@@ -12,7 +12,7 @@ Transform existing codebases into agent-ready environments through systematic an
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation** - CLI scaffolding, language detection, config system
+- [x] **Phase 1: Foundation** - CLI scaffolding, language detection, config system
 - [ ] **Phase 2: Core Metrics** - Type strictness, lint errors, coverage measurement
 - [ ] **Phase 3: Scoring Engine** - Composite scoring, CI integration, quality gates
 - [ ] **Phase 4: Context Generation** - AGENTS.md validation/generation, hooks
@@ -30,10 +30,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can create `.btar.yaml` with custom thresholds
   4. User sees progress output during analysis
 **Research**: Unlikely (established CLI patterns, research SUMMARY.md provides tool mapping)
-**Plans**: TBD
+**Plans**: 4
 
 Plans:
-- [ ] 01-01: TBD
+- [x] 01-01: Project scaffolding
+- [x] 01-02: Config loader (TDD)
+- [x] 01-03: Language detector (TDD)
+- [x] 01-04: CLI integration
 
 ### Phase 2: Core Metrics
 **Goal**: Type strictness, lint errors, coverage measurement
@@ -102,7 +105,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/TBD | Not started | - |
+| 1. Foundation | 4/4 | Complete | 2026-01-16 |
 | 2. Core Metrics | 0/TBD | Not started | - |
 | 3. Scoring Engine | 0/TBD | Not started | - |
 | 4. Context Generation | 0/TBD | Not started | - |
