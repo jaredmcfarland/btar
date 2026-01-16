@@ -78,31 +78,31 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Pending | Pending |
-| INFRA-02 | Pending | Pending |
-| INFRA-03 | Pending | Pending |
-| INFRA-04 | Pending | Pending |
-| INFRA-05 | Pending | Pending |
-| INFRA-06 | Pending | Pending |
-| INFRA-07 | Pending | Pending |
-| METR-01 | Pending | Pending |
-| METR-02 | Pending | Pending |
-| METR-03 | Pending | Pending |
-| METR-04 | Pending | Pending |
-| METR-05 | Pending | Pending |
-| CTXT-01 | Pending | Pending |
-| CTXT-02 | Pending | Pending |
-| CTXT-03 | Pending | Pending |
-| CTXT-04 | Pending | Pending |
-| RMED-01 | Pending | Pending |
-| RMED-02 | Pending | Pending |
-| RMED-03 | Pending | Pending |
+| INFRA-01 | Phase 1 | Pending |
+| INFRA-02 | Phase 1 | Pending |
+| INFRA-03 | Phase 3 | Pending |
+| INFRA-04 | Phase 1 | Pending |
+| INFRA-05 | Phase 3 | Pending |
+| INFRA-06 | Phase 3 | Pending |
+| INFRA-07 | Phase 1 | Pending |
+| METR-01 | Phase 2 | Pending |
+| METR-02 | Phase 2 | Pending |
+| METR-03 | Phase 2 | Pending |
+| METR-04 | Phase 3 | Pending |
+| METR-05 | Phase 2 | Pending |
+| CTXT-01 | Phase 4 | Pending |
+| CTXT-02 | Phase 4 | Pending |
+| CTXT-03 | Phase 4 | Pending |
+| CTXT-04 | Phase 4 | Pending |
+| RMED-01 | Phase 5 | Pending |
+| RMED-02 | Phase 5 | Pending |
+| RMED-03 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 19 total
-- Mapped to phases: 0 (pending create-roadmap)
-- Unmapped: 19 ⚠️
+- Mapped to phases: 19 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-15*
-*Last updated: 2026-01-15 after initial definition*
+*Last updated: 2026-01-15 after roadmap creation*
