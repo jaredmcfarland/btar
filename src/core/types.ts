@@ -44,3 +44,17 @@ export interface BTARConfig {
   exclude: string[];
   languages: SupportedLanguage[];
 }
+
+/**
+ * Custom error for configuration issues
+ */
+export class ConfigError extends Error {
+  constructor(
+    message: string,
+    public readonly line?: number,
+    public readonly column?: number
+  ) {
+    super(message);
+    this.name = "ConfigError";
+  }
+}
