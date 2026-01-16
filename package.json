@@ -1,0 +1,37 @@
+{
+  "name": "btar",
+  "version": "0.1.0",
+  "description": "Transform brownfield codebases into agent-ready environments",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "btar": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "dev": "tsc --watch",
+    "test": "vitest"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "cli",
+    "agent-ready",
+    "brownfield",
+    "codebase-analysis",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^12.1.0",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}
