@@ -94,19 +94,25 @@ function parseGoCoverage(stdout: string, _stderr: string, exitCode: number): num
     return -1;
   }
 
-  // Look for coverage percentage
+  // Go test outputs coverage per package. Collect all and average.
   // Format: "coverage: XX.X% of statements"
-  const coverageMatch = stdout.match(/coverage:\s*([\d.]+)%\s+of\s+statements/);
-  if (coverageMatch) {
-    const value = parseFloat(coverageMatch[1]);
-    return isNaN(value) ? 0 : Math.min(100, Math.max(0, value));
-  }
-
-  // Alternative: Multiple package output, get total
-  // Look for all coverage percentages and average
-  const allMatches = stdout.matchAll(/coverage:\s*([\d.]+)%/g);
+  const allMatches = stdout.matchAll(/coverage:\s*([\d.]+)%\s+of\s+statements/g);
   const percentages: number[] = [];
   for (const match of allMatches) {
+    const value = parseFloat(match[1]);
+    if (!isNaN(value)) {
+      percentages.push(value);
+    }
+  }
+
+  if (percentages.length > 0) {
+    const avg = percentages.reduce((a, b) => a + b, 0) / percentages.length;
+    return Math.min(100, Math.max(0, avg));
+  }
+
+  // Fallback: Look for any coverage percentage pattern
+  const fallbackMatches = stdout.matchAll(/coverage:\s*([\d.]+)%/g);
+  for (const match of fallbackMatches) {
     const value = parseFloat(match[1]);
     if (!isNaN(value)) {
       percentages.push(value);
