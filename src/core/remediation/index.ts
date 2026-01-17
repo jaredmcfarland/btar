@@ -1,6 +1,6 @@
 /**
  * Remediation Module
- * Barrel export for recommendation and auto-fix functionality
+ * Barrel export for recommendation, auto-fix, and ratchet functionality
  */
 
 export {
@@ -10,3 +10,11 @@ export {
   type RecommendationCategory,
   type RecommendationImpact,
 } from "./recommendations.js";
+
+export {
+  loadRatchetScore,
+  saveRatchetScore,
+  checkRatchetRegression,
+  type RatchetState,
+  type RatchetResult,
+} from "./ratchet.js";
