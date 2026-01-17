@@ -18,3 +18,6 @@ export {
   type RatchetState,
   type RatchetResult,
 } from "./ratchet.js";
+
+export { runFix, FIX_TOOLS } from "./fixer.js";
+export type { FixResult } from "./fixer.js";
