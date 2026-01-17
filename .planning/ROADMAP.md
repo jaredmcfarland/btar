@@ -13,7 +13,7 @@ Transform existing codebases into agent-ready environments through systematic an
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - CLI scaffolding, language detection, config system
-- [ ] **Phase 2: Core Metrics** - Type strictness, lint errors, coverage measurement
+- [x] **Phase 2: Core Metrics** - Type strictness, lint errors, coverage measurement
 - [ ] **Phase 3: Scoring Engine** - Composite scoring, CI integration, quality gates
 - [ ] **Phase 4: Context Generation** - AGENTS.md validation/generation, hooks
 - [ ] **Phase 5: Remediation** - Recommendations, ratchet mode, auto-fix
@@ -48,10 +48,14 @@ Plans:
   3. User can measure test coverage percentage
   4. User sees per-dimension breakdown in output
 **Research**: Unlikely (tool invocation via subprocess, STACK.md provides mapping)
-**Plans**: TBD
+**Plans**: 5
 
 Plans:
-- [ ] 02-01: TBD
+- [x] 02-01: Metric types and tool runner
+- [x] 02-02: Type strictness measurement (TDD)
+- [x] 02-03: Lint errors measurement (TDD)
+- [x] 02-04: Coverage measurement (TDD)
+- [x] 02-05: Metrics integration
 
 ### Phase 3: Scoring Engine
 **Goal**: Composite scoring, CI integration, quality gates
@@ -106,7 +110,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-01-16 |
-| 2. Core Metrics | 0/TBD | Not started | - |
+| 2. Core Metrics | 5/5 | Complete | 2026-01-17 |
 | 3. Scoring Engine | 0/TBD | Not started | - |
 | 4. Context Generation | 0/TBD | Not started | - |
 | 5. Remediation | 0/TBD | Not started | - |

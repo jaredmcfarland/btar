@@ -19,11 +19,11 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Metrics
 
-- [ ] **METR-01**: User can measure type strictness errors (0 errors target)
-- [ ] **METR-02**: User can measure lint errors on main (0 errors target)
-- [ ] **METR-03**: User can measure test coverage percentage (>70% target)
+- [x] **METR-01**: User can measure type strictness errors (0 errors target)
+- [x] **METR-02**: User can measure lint errors on main (0 errors target)
+- [x] **METR-03**: User can measure test coverage percentage (>70% target)
 - [ ] **METR-04**: User receives composite Agent-Readiness Score (0-100)
-- [ ] **METR-05**: User sees per-dimension breakdown of scoring
+- [x] **METR-05**: User sees per-dimension breakdown of scoring
 
 ### Context
 
@@ -85,11 +85,11 @@ Which phases cover which requirements. Updated by create-roadmap.
 | INFRA-05 | Phase 3 | Pending |
 | INFRA-06 | Phase 3 | Pending |
 | INFRA-07 | Phase 1 | Complete |
-| METR-01 | Phase 2 | Pending |
-| METR-02 | Phase 2 | Pending |
-| METR-03 | Phase 2 | Pending |
+| METR-01 | Phase 2 | Complete |
+| METR-02 | Phase 2 | Complete |
+| METR-03 | Phase 2 | Complete |
 | METR-04 | Phase 3 | Pending |
-| METR-05 | Phase 2 | Pending |
+| METR-05 | Phase 2 | Complete |
 | CTXT-01 | Phase 4 | Pending |
 | CTXT-02 | Phase 4 | Pending |
 | CTXT-03 | Phase 4 | Pending |
@@ -105,4 +105,4 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 ---
 *Requirements defined: 2026-01-15*
-*Last updated: 2026-01-16 after Phase 1 completion*
+*Last updated: 2026-01-17 after Phase 2 completion*
