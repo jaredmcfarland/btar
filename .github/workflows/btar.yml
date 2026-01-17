@@ -1,0 +1,35 @@
+# Self-test: Run BTAR analysis on this repository
+# This serves as both a working example and validation that the workflow syntax is correct.
+# Generated with: btar init-ci --threshold 50
+
+name: BTAR Analysis
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install BTAR
+        run: npm install -g btar
+
+      - name: Run Analysis
+        run: btar analyze . --json --fail-under 50
+
+      - name: Upload Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: btar-report
+          path: btar-report.json
