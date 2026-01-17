@@ -10,9 +10,9 @@ See: .planning/PROJECT.md (updated 2026-01-15)
 ## Current Position
 
 Phase: 5 of 5 (Remediation)
-Plan: 1 of 5 complete (05-03)
+Plan: 2 of 5 complete (05-02, 05-03)
 Status: In progress
-Last activity: 2026-01-17 — Completed 05-03-PLAN.md (Fix Command)
+Last activity: 2026-01-17 — Completed 05-02-PLAN.md (Ratchet Mode Score Persistence)
 
 Progress: ███████████████████░ 100% (19/19 plans)
 
@@ -31,7 +31,7 @@ Progress: ███████████████████░ 100% (19/
 | 02-core-metrics | 5/5 | 20m | 4m |
 | 03-scoring-engine | 4/4 | 17m | 4m 15s |
 | 04-context-generation | 4/4 | 12m | 3m |
-| 05-remediation | 1/5 | 7m | 7m |
+| 05-remediation | 2/5 | 9m 15s | 4m 38s |
 
 **Recent Trend:**
 - Last 5 plans: 04-02 (3m), 04-03 (4m), 04-04 (1m), 05-03 (7m)
@@ -94,6 +94,8 @@ Recent decisions affecting current work:
 | Ruby fixer | 05-03 | rubocop --autocorrect |
 | PHP fixer | 05-03 | php-cs-fixer fix |
 | Java fixer | 05-03 | google-java-format --replace |
+| Ratchet file name | 05-02 | .btar-score for project-level persistence |
+| Delta sign convention | 05-02 | Positive=improvement, negative=regression |
 
 ### Pending Todos
 
@@ -113,11 +115,11 @@ Resume file: None
 
 Remediation plans:
 - [ ] 05-01: Recommendations Engine — Not started
-- [ ] 05-02: Ratchet Score Tracking — Not started
+- [x] 05-02: Ratchet Mode Score Persistence — Complete
 - [x] 05-03: Fix Command — Complete
 - [ ] 05-04: Suggest Command — Not started
 - [ ] 05-05: Ratchet Command — Not started
 
 **Phase 5 In Progress**
 
-Next: 05-01, 05-02, 05-04, or 05-05 (depending on wave execution)
+Next: 05-01, 05-04, or 05-05 (depending on wave execution)
