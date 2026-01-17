@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation** - CLI scaffolding, language detection, config system
 - [x] **Phase 2: Core Metrics** - Type strictness, lint errors, coverage measurement
-- [ ] **Phase 3: Scoring Engine** - Composite scoring, CI integration, quality gates
+- [x] **Phase 3: Scoring Engine** - Composite scoring, CI integration, quality gates
 - [ ] **Phase 4: Context Generation** - AGENTS.md validation/generation, hooks
 - [ ] **Phase 5: Remediation** - Recommendations, ratchet mode, auto-fix
 
@@ -68,10 +68,13 @@ Plans:
   4. BTAR returns non-zero exit code when gates fail
 **Research**: Likely (GitHub Actions API, scoring normalization)
 **Research topics**: GitHub Actions API for workflow history/timing, scoring normalization from diverse tool outputs to 0-100
-**Plans**: TBD
+**Plans**: 4
 
 Plans:
-- [ ] 03-01: TBD
+- [x] 03-01: Scoring algorithm (TDD)
+- [x] 03-02: JSON output format
+- [x] 03-03: Quality gates (--fail-under)
+- [x] 03-04: GitHub Actions integration (init-ci)
 
 ### Phase 4: Context Generation
 **Goal**: AGENTS.md validation/generation, hook generation
@@ -111,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 4/4 | Complete | 2026-01-16 |
 | 2. Core Metrics | 5/5 | Complete | 2026-01-17 |
-| 3. Scoring Engine | 0/TBD | Not started | - |
+| 3. Scoring Engine | 4/4 | Complete | 2026-01-17 |
 | 4. Context Generation | 0/TBD | Not started | - |
 | 5. Remediation | 0/TBD | Not started | - |
 

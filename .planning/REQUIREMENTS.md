@@ -11,10 +11,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **INFRA-01**: User can run BTAR from command line with `btar` command
 - [x] **INFRA-02**: User can analyze TypeScript, Python, Swift, Kotlin, Go, Java, Ruby, PHP codebases
-- [ ] **INFRA-03**: User can run BTAR in GitHub Actions CI pipeline
+- [x] **INFRA-03**: User can run BTAR in GitHub Actions CI pipeline
 - [x] **INFRA-04**: User can configure thresholds and exclusions via `.btar.yaml`
-- [ ] **INFRA-05**: User receives JSON output for integration with other tools
-- [ ] **INFRA-06**: User receives non-zero exit code when quality gates fail
+- [x] **INFRA-05**: User receives JSON output for integration with other tools
+- [x] **INFRA-06**: User receives non-zero exit code when quality gates fail
 - [x] **INFRA-07**: User sees progress output during analysis
 
 ### Metrics
@@ -22,7 +22,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **METR-01**: User can measure type strictness errors (0 errors target)
 - [x] **METR-02**: User can measure lint errors on main (0 errors target)
 - [x] **METR-03**: User can measure test coverage percentage (>70% target)
-- [ ] **METR-04**: User receives composite Agent-Readiness Score (0-100)
+- [x] **METR-04**: User receives composite Agent-Readiness Score (0-100)
 - [x] **METR-05**: User sees per-dimension breakdown of scoring
 
 ### Context
@@ -80,15 +80,15 @@ Which phases cover which requirements. Updated by create-roadmap.
 |-------------|-------|--------|
 | INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Complete |
-| INFRA-03 | Phase 3 | Pending |
+| INFRA-03 | Phase 3 | Complete |
 | INFRA-04 | Phase 1 | Complete |
-| INFRA-05 | Phase 3 | Pending |
-| INFRA-06 | Phase 3 | Pending |
+| INFRA-05 | Phase 3 | Complete |
+| INFRA-06 | Phase 3 | Complete |
 | INFRA-07 | Phase 1 | Complete |
 | METR-01 | Phase 2 | Complete |
 | METR-02 | Phase 2 | Complete |
 | METR-03 | Phase 2 | Complete |
-| METR-04 | Phase 3 | Pending |
+| METR-04 | Phase 3 | Complete |
 | METR-05 | Phase 2 | Complete |
 | CTXT-01 | Phase 4 | Pending |
 | CTXT-02 | Phase 4 | Pending |
@@ -105,4 +105,4 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 ---
 *Requirements defined: 2026-01-15*
-*Last updated: 2026-01-17 after Phase 2 completion*
+*Last updated: 2026-01-17 after Phase 3 completion*
