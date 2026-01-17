@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-01-15)
 ## Current Position
 
 Phase: 2 of 5 (Core Metrics)
-Plan: 1 of 5 complete
+Plan: 2 of 5 complete
 Status: In progress
-Last activity: 2026-01-17 — Completed 02-01-PLAN.md (Types and Runner)
+Last activity: 2026-01-17 — Completed 02-03-PLAN.md (Lint Errors Measurer)
 
-Progress: ██████░░░░░░░░░░░░░ 26% (5/19 plans)
+Progress: ███████░░░░░░░░░░░░ 32% (6/19 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 5m 51s
-- Total execution time: 29m 17s
+- Total plans completed: 6
+- Average duration: 5m 13s
+- Total execution time: 31m 17s
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-foundation | 4/4 | 26m 17s | 6m 35s |
-| 02-core-metrics | 1/5 | 3m | 3m |
+| 02-core-metrics | 2/5 | 5m | 2m 30s |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (9m), 01-03 (13m), 01-04 (2m), 02-01 (3m)
-- Trend: Type/infrastructure plans faster than TDD feature plans
+- Last 5 plans: 01-03 (13m), 01-04 (2m), 02-01 (3m), 02-03 (2m)
+- Trend: Metrics plans executing efficiently with established patterns
 
 ## Accumulated Context
 
@@ -56,6 +56,8 @@ Recent decisions affecting current work:
 | Quiet mode | 01-04 | Suppress non-error output |
 | Directory argument | 01-04 | Required (not optional) |
 | Metric parser signature | 02-01 | (stdout, stderr, exitCode) => number |
+| Linter output format | 02-03 | JSON where available for reliable parsing |
+| SwiftLint counting | 02-03 | Errors only (not warnings) |
 
 ### Pending Todos
 
@@ -67,6 +69,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-01-17 19:52:23 UTC
-Stopped at: Completed 02-01-PLAN.md (Types and Runner)
+Last session: 2026-01-17 19:56:51 UTC
+Stopped at: Completed 02-03-PLAN.md (Lint Errors Measurer)
 Resume file: None
