@@ -28,6 +28,19 @@ export interface MetricOutput {
 }
 
 /**
+ * Quality gate result
+ */
+export type GateResult = "passed" | "failed";
+
+/**
+ * Options for JSON formatting
+ */
+export interface FormatJsonOptions {
+  /** Quality gate threshold (if set, gateResult will be included) */
+  failUnder?: number;
+}
+
+/**
  * JSON-serializable analysis output
  */
 export interface AnalysisOutput {
@@ -55,6 +68,8 @@ export interface AnalysisOutput {
     lintErrors: number;
     coverage: number;
   };
+  /** Quality gate result (only present if --fail-under was specified) */
+  gateResult?: GateResult;
 }
 
 /**
@@ -80,19 +95,21 @@ function mapToRecord(
  *
  * @param report - The metrics report to serialize
  * @param scoreResult - The calculated score result
+ * @param options - Optional formatting options
  * @returns JSON string with 2-space indentation
  *
  * @example
  * ```ts
  * const report = await runAllMetrics({ directory: ".", languages });
  * const scoreResult = calculateScore(report);
- * const json = formatAsJson(report, scoreResult);
- * console.log(json); // Valid JSON output
+ * const json = formatAsJson(report, scoreResult, { failUnder: 70 });
+ * console.log(json); // Valid JSON output with gateResult
  * ```
  */
 export function formatAsJson(
   report: MetricsReport,
-  scoreResult: ScoreResult
+  scoreResult: ScoreResult,
+  options?: FormatJsonOptions
 ): string {
   const output: AnalysisOutput = {
     languages: report.languages.map((l) => ({
@@ -118,6 +135,12 @@ export function formatAsJson(
       coverage: scoreResult.breakdown.coverage,
     },
   };
+
+  // Add gate result if threshold was specified
+  if (options?.failUnder !== undefined) {
+    output.gateResult =
+      scoreResult.score >= options.failUnder ? "passed" : "failed";
+  }
 
   return JSON.stringify(output, null, 2);
 }

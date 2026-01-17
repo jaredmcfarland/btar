@@ -21,6 +21,11 @@ program
   .option("-q, --quiet", "Suppress progress output")
   .option("-c, --config <path>", "Path to config file")
   .option("-j, --json", "Output results as JSON")
+  .option(
+    "--fail-under <score>",
+    "Exit non-zero if score below threshold",
+    parseInt
+  )
   .action(async (directory, options) => {
     await analyzeCommand(directory, options);
   });

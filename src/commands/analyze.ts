@@ -20,6 +20,7 @@ export interface AnalyzeOptions {
   quiet?: boolean;
   config?: string;
   json?: boolean;
+  failUnder?: number;
 }
 
 /**
@@ -102,9 +103,18 @@ export async function analyzeCommand(
   // Calculate score
   const scoreResult = calculateScore(report);
 
+  // Check quality gate
+  const gateFailure =
+    options.failUnder !== undefined && scoreResult.score < options.failUnder;
+
   // JSON output mode
   if (options.json) {
-    console.log(formatAsJson(report, scoreResult));
+    console.log(
+      formatAsJson(report, scoreResult, { failUnder: options.failUnder })
+    );
+    if (gateFailure) {
+      process.exit(1);
+    }
     return;
   }
 
@@ -154,4 +164,12 @@ export async function analyzeCommand(
     "Score",
     `${scoreResult.score}/100 (${scoreResult.interpretation})`
   );
+
+  // Quality gate enforcement
+  if (gateFailure) {
+    progress.error(
+      `Score ${scoreResult.score} is below threshold ${options.failUnder}`
+    );
+    process.exit(1);
+  }
 }
