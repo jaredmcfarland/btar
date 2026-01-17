@@ -6,6 +6,7 @@
 import { Command } from "commander";
 import { VERSION } from "./index.js";
 import { analyzeCommand } from "./commands/analyze.js";
+import { initCiCommand } from "./commands/init-ci.js";
 
 const program = new Command();
 
@@ -22,6 +23,18 @@ program
   .option("-j, --json", "Output results as JSON")
   .action(async (directory, options) => {
     await analyzeCommand(directory, options);
+  });
+
+program
+  .command("init-ci")
+  .description("Generate GitHub Actions workflow for BTAR")
+  .option("-t, --threshold <score>", "Minimum score threshold", "70")
+  .option("-f, --force", "Overwrite existing workflow")
+  .action(async (options) => {
+    await initCiCommand({
+      threshold: parseInt(options.threshold, 10),
+      force: options.force,
+    });
   });
 
 program.parseAsync(process.argv).catch((error) => {
