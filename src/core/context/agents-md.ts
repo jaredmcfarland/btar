@@ -39,56 +39,69 @@ const RECOMMENDED_SECTIONS: { name: string; alternatives: string[] }[] = [
 ];
 
 /**
- * Language-specific defaults for AGENTS.md generation
+ * Language-specific configuration for AGENTS.md generation
  */
-const LANGUAGE_DEFAULTS: Record<
-  SupportedLanguage,
-  { build: string; test: string; lint: string }
-> = {
+interface LanguageConfig {
+  build: string;
+  test: string;
+  lint: string;
+  styleNotes: string;
+}
+
+const LANGUAGE_CONFIG: Record<SupportedLanguage, LanguageConfig> = {
   typescript: {
     build: "npm run build",
     test: "npm test",
     lint: "npm run lint",
+    styleNotes: "- Follow TypeScript strict mode conventions\n- Use ESLint with TypeScript parser",
   },
   javascript: {
     build: "npm run build",
     test: "npm test",
     lint: "npm run lint",
+    styleNotes: "- Follow ESLint conventions\n- Use Prettier for formatting",
   },
   python: {
     build: "pip install -e .",
     test: "pytest",
     lint: "ruff check .",
+    styleNotes: "- Follow PEP 8 style guide\n- Use type hints where possible",
   },
   go: {
     build: "go build ./...",
     test: "go test ./...",
     lint: "go fmt ./... && go vet ./...",
+    styleNotes: "- Run `go fmt` before committing\n- Follow Go naming conventions",
   },
   java: {
     build: "mvn compile",
     test: "mvn test",
     lint: "mvn checkstyle:check",
+    styleNotes: "- Follow Java naming conventions\n- Use Checkstyle for enforcement",
   },
   kotlin: {
     build: "gradle build",
     test: "gradle test",
     lint: "gradle ktlintCheck",
+    styleNotes: "- Follow Kotlin coding conventions\n- Use ktlint for formatting",
   },
   swift: {
     build: "swift build",
     test: "swift test",
     lint: "swiftlint",
+    styleNotes: "- Follow Swift API design guidelines\n- Use SwiftLint for enforcement",
   },
   ruby: {
     build: "bundle install",
     test: "bundle exec rspec",
     lint: "bundle exec rubocop",
+    styleNotes: "- Follow Ruby style guide\n- Use RuboCop for linting",
   },
   php: {
     build: "composer install",
     test: "vendor/bin/phpunit",
     lint: "vendor/bin/phpcs",
+    styleNotes: "- Follow PSR-12 coding standard\n- Use PHP_CodeSniffer",
   },
 };
 
@@ -176,12 +189,12 @@ export function generateAgentsMd(options: AgentsMdOptions): string {
 
   // Get primary language for defaults
   const primaryLang = languages[0]?.language ?? "typescript";
-  const defaults = LANGUAGE_DEFAULTS[primaryLang];
+  const config = LANGUAGE_CONFIG[primaryLang];
 
   // Use custom commands or language defaults
-  const build = buildCommand ?? defaults.build;
-  const test = testCommand ?? defaults.test;
-  const lint = lintCommand ?? defaults.lint;
+  const build = buildCommand ?? config.build;
+  const test = testCommand ?? config.test;
+  const lint = lintCommand ?? config.lint;
 
   // Build the markdown content
   const lines: string[] = [];
@@ -215,8 +228,8 @@ export function generateAgentsMd(options: AgentsMdOptions): string {
     lines.push("### Per-Language Build");
     lines.push("");
     for (const lang of languages) {
-      const langDefaults = LANGUAGE_DEFAULTS[lang.language];
-      lines.push(`- **${capitalizeFirst(lang.language)}:** \`${langDefaults.build}\``);
+      const langConfig = LANGUAGE_CONFIG[lang.language];
+      lines.push(`- **${capitalizeFirst(lang.language)}:** \`${langConfig.build}\``);
     }
     lines.push("");
   }
@@ -234,8 +247,8 @@ export function generateAgentsMd(options: AgentsMdOptions): string {
     lines.push("### Per-Language Tests");
     lines.push("");
     for (const lang of languages) {
-      const langDefaults = LANGUAGE_DEFAULTS[lang.language];
-      lines.push(`- **${capitalizeFirst(lang.language)}:** \`${langDefaults.test}\``);
+      const langConfig = LANGUAGE_CONFIG[lang.language];
+      lines.push(`- **${capitalizeFirst(lang.language)}:** \`${langConfig.test}\``);
     }
     lines.push("");
   }
@@ -250,9 +263,10 @@ export function generateAgentsMd(options: AgentsMdOptions): string {
 
   // Language-specific style notes
   for (const lang of languages) {
+    const langConfig = LANGUAGE_CONFIG[lang.language];
     lines.push(`### ${capitalizeFirst(lang.language)}`);
     lines.push("");
-    lines.push(getLanguageStyleNotes(lang.language));
+    lines.push(langConfig.styleNotes);
     lines.push("");
   }
 
@@ -264,32 +278,4 @@ export function generateAgentsMd(options: AgentsMdOptions): string {
  */
 function capitalizeFirst(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-/**
- * Get style notes for a language
- */
-function getLanguageStyleNotes(language: SupportedLanguage): string {
-  switch (language) {
-    case "typescript":
-      return "- Follow TypeScript strict mode conventions\n- Use ESLint with TypeScript parser";
-    case "javascript":
-      return "- Follow ESLint conventions\n- Use Prettier for formatting";
-    case "python":
-      return "- Follow PEP 8 style guide\n- Use type hints where possible";
-    case "go":
-      return "- Run `go fmt` before committing\n- Follow Go naming conventions";
-    case "java":
-      return "- Follow Java naming conventions\n- Use Checkstyle for enforcement";
-    case "kotlin":
-      return "- Follow Kotlin coding conventions\n- Use ktlint for formatting";
-    case "swift":
-      return "- Follow Swift API design guidelines\n- Use SwiftLint for enforcement";
-    case "ruby":
-      return "- Follow Ruby style guide\n- Use RuboCop for linting";
-    case "php":
-      return "- Follow PSR-12 coding standard\n- Use PHP_CodeSniffer";
-    default:
-      return "- Follow project conventions";
-  }
 }
