@@ -8,6 +8,8 @@ import { resolve } from "node:path";
 import { loadConfig } from "../core/config.js";
 import { detectLanguages } from "../core/detector.js";
 import { createProgressReporter } from "../core/progress.js";
+import { runAllMetrics } from "../core/metrics/index.js";
+import type { MetricResult } from "../core/metrics/types.js";
 
 /**
  * Options for analyze command
@@ -15,6 +17,19 @@ import { createProgressReporter } from "../core/progress.js";
 export interface AnalyzeOptions {
   quiet?: boolean;
   config?: string;
+}
+
+/**
+ * Format metric value for display
+ */
+function formatMetricValue(result: MetricResult): string {
+  if (!result.success) {
+    return "n/a";
+  }
+  if (result.metric === "test_coverage") {
+    return `${result.value}%`;
+  }
+  return `${result.value} errors`;
 }
 
 /**
@@ -50,4 +65,58 @@ export async function analyzeCommand(
 
   const languageNames = languages.map((l) => l.language).join(", ");
   progress.success(`Found: ${languageNames}`);
+
+  // Run metrics
+  const report = await runAllMetrics({
+    directory: resolvedDir,
+    languages,
+    onProgress: (metric, status) => {
+      if (status === "start") {
+        progress.info(`Measuring ${metric}...`);
+      }
+    },
+  });
+
+  // Output metrics section
+  progress.section("Metrics:");
+
+  // Type Strictness
+  progress.section("Type Strictness");
+  for (const [lang, result] of report.metrics.typeStrictness) {
+    progress.metric(
+      lang,
+      result.tool,
+      formatMetricValue(result),
+      result.success
+    );
+  }
+
+  // Lint Errors
+  progress.section("Lint Errors");
+  for (const [lang, result] of report.metrics.lintErrors) {
+    progress.metric(
+      lang,
+      result.tool,
+      formatMetricValue(result),
+      result.success
+    );
+  }
+
+  // Test Coverage
+  progress.section("Test Coverage");
+  for (const [lang, result] of report.metrics.coverage) {
+    const isCoverageGood = result.success && result.value >= 70;
+    progress.metric(
+      lang,
+      result.tool,
+      formatMetricValue(result),
+      result.success && isCoverageGood
+    );
+  }
+
+  // Summary
+  progress.section("Summary:");
+  progress.summary("Type errors", report.summary.totalTypeErrors);
+  progress.summary("Lint errors", report.summary.totalLintErrors);
+  progress.summary("Coverage", `${report.summary.averageCoverage}%`);
 }
