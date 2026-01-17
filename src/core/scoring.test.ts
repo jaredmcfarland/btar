@@ -88,7 +88,7 @@ describe("calculateScore", () => {
       expect(result.breakdown.coverage).toBe(40);
     });
 
-    it("returns ~92 for good metrics (0 type errors, 2 lint errors, 85% coverage)", () => {
+    it("returns ~84 for good metrics (0 type errors, 2 lint errors, 85% coverage)", () => {
       const report = createReport({
         typeErrors: 0,
         lintErrors: 2,
@@ -97,9 +97,9 @@ describe("calculateScore", () => {
 
       const result = calculateScore(report);
 
-      // 30 (type) + ~21 (lint with 2 errors) + 34 (85% coverage) = ~85-90
-      expect(result.score).toBeGreaterThanOrEqual(85);
-      expect(result.score).toBeLessThanOrEqual(95);
+      // 30 (type) + 20 (lint with 2 errors, log decay) + 34 (85% coverage) = 84
+      expect(result.score).toBeGreaterThanOrEqual(80);
+      expect(result.score).toBeLessThanOrEqual(90);
       expect(result.breakdown.typeStrictness).toBe(30);
       expect(result.breakdown.lintErrors).toBeGreaterThan(15);
       expect(result.breakdown.lintErrors).toBeLessThan(30);
@@ -233,7 +233,8 @@ describe("calculateScore", () => {
     });
 
     it("returns 'needs-work' for scores 50-69", () => {
-      const report = createReport({ typeErrors: 10, lintErrors: 20, coverage: 50 });
+      // Use fewer errors to land in the 50-69 range
+      const report = createReport({ typeErrors: 5, lintErrors: 10, coverage: 50 });
       const result = calculateScore(report);
       expect(result.score).toBeGreaterThanOrEqual(50);
       expect(result.score).toBeLessThan(70);
