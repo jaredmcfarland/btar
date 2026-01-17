@@ -27,10 +27,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Context
 
-- [ ] **CTXT-01**: User can validate AGENTS.md has required sections
-- [ ] **CTXT-02**: User can generate AGENTS.md from codebase analysis
-- [ ] **CTXT-03**: User can generate .pre-commit-config.yaml for detected language
-- [ ] **CTXT-04**: User can generate Claude Code hooks for validation
+- [x] **CTXT-01**: User can validate AGENTS.md has required sections
+- [x] **CTXT-02**: User can generate AGENTS.md from codebase analysis
+- [x] **CTXT-03**: User can generate .pre-commit-config.yaml for detected language
+- [x] **CTXT-04**: User can generate Claude Code hooks for validation
 
 ### Remediation
 
@@ -90,10 +90,10 @@ Which phases cover which requirements. Updated by create-roadmap.
 | METR-03 | Phase 2 | Complete |
 | METR-04 | Phase 3 | Complete |
 | METR-05 | Phase 2 | Complete |
-| CTXT-01 | Phase 4 | Pending |
-| CTXT-02 | Phase 4 | Pending |
-| CTXT-03 | Phase 4 | Pending |
-| CTXT-04 | Phase 4 | Pending |
+| CTXT-01 | Phase 4 | Complete |
+| CTXT-02 | Phase 4 | Complete |
+| CTXT-03 | Phase 4 | Complete |
+| CTXT-04 | Phase 4 | Complete |
 | RMED-01 | Phase 5 | Pending |
 | RMED-02 | Phase 5 | Pending |
 | RMED-03 | Phase 5 | Pending |
@@ -105,4 +105,4 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 ---
 *Requirements defined: 2026-01-15*
-*Last updated: 2026-01-17 after Phase 3 completion*
+*Last updated: 2026-01-17 after Phase 4 completion*

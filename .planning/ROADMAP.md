@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation** - CLI scaffolding, language detection, config system
 - [x] **Phase 2: Core Metrics** - Type strictness, lint errors, coverage measurement
 - [x] **Phase 3: Scoring Engine** - Composite scoring, CI integration, quality gates
-- [ ] **Phase 4: Context Generation** - AGENTS.md validation/generation, hooks
+- [x] **Phase 4: Context Generation** - AGENTS.md validation/generation, hooks
 - [ ] **Phase 5: Remediation** - Recommendations, ratchet mode, auto-fix
 
 ## Phase Details
@@ -86,10 +86,13 @@ Plans:
   3. User can generate .pre-commit-config.yaml
   4. User can generate Claude Code hooks
 **Research**: Unlikely (template generation, standard file patterns)
-**Plans**: TBD
+**Plans**: 4
 
 Plans:
-- [ ] 04-01: TBD
+- [x] 04-01: AGENTS.md validation and generation (TDD)
+- [x] 04-02: Pre-commit config generator
+- [x] 04-03: Claude Code hooks generator
+- [x] 04-04: CLI context command integration
 
 ### Phase 5: Remediation
 **Goal**: Recommendations, ratchet mode, auto-fix delegation
@@ -115,7 +118,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Foundation | 4/4 | Complete | 2026-01-16 |
 | 2. Core Metrics | 5/5 | Complete | 2026-01-17 |
 | 3. Scoring Engine | 4/4 | Complete | 2026-01-17 |
-| 4. Context Generation | 0/TBD | Not started | - |
+| 4. Context Generation | 4/4 | Complete | 2026-01-17 |
 | 5. Remediation | 0/TBD | Not started | - |
 
 ---
