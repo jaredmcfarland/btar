@@ -103,10 +103,13 @@ Plans:
   2. User can enable ratchet mode to prevent regressions
   3. User can auto-fix lint issues via delegation to language tools
 **Research**: Unlikely (delegating to existing tools like ruff --fix, eslint --fix)
-**Plans**: TBD
+**Plans**: 4
 
 Plans:
-- [ ] 05-01: TBD
+- [ ] 05-01: Tier-based recommendations engine (TDD)
+- [ ] 05-02: Ratchet mode score persistence (TDD)
+- [ ] 05-03: Fix command with language tool delegation
+- [ ] 05-04: CLI integration (recommendations + ratchet)
 
 ## Progress
 
@@ -119,7 +122,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Core Metrics | 5/5 | Complete | 2026-01-17 |
 | 3. Scoring Engine | 4/4 | Complete | 2026-01-17 |
 | 4. Context Generation | 4/4 | Complete | 2026-01-17 |
-| 5. Remediation | 0/TBD | Not started | - |
+| 5. Remediation | 0/4 | Planned | - |
 
 ---
 *Roadmap created: 2026-01-15*
