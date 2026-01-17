@@ -8,6 +8,7 @@ import { VERSION } from "./index.js";
 import { analyzeCommand } from "./commands/analyze.js";
 import { initCiCommand } from "./commands/init-ci.js";
 import { contextCommand } from "./commands/context.js";
+import { fixCommand } from "./commands/fix.js";
 
 const program = new Command();
 
@@ -44,6 +45,15 @@ program
   });
 
 program.addCommand(contextCommand);
+
+program
+  .command("fix <directory>")
+  .description("Auto-fix lint issues in the codebase")
+  .option("-q, --quiet", "Suppress progress output")
+  .option("-l, --language <lang>", "Fix only specific language")
+  .action(async (directory, options) => {
+    await fixCommand(directory, options);
+  });
 
 program.parseAsync(process.argv).catch((error) => {
   console.error("Error:", error.message);
