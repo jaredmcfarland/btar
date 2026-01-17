@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-01-15)
 ## Current Position
 
 Phase: 5 of 5 (Remediation)
-Plan: 2 of 5 complete (05-02, 05-03)
+Plan: 4 of 5 complete (05-01, 05-02, 05-03, 05-04)
 Status: In progress
-Last activity: 2026-01-17 — Completed 05-02-PLAN.md (Ratchet Mode Score Persistence)
+Last activity: 2026-01-17 — Completed 05-04-PLAN.md (CLI Integration)
 
-Progress: ███████████████████░ 100% (19/19 plans)
+Progress: ████████████████████ 100% (22/22 plans)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
-- Average duration: 4m 17s
-- Total execution time: 82m 17s
+- Total plans completed: 22
+- Average duration: 4m 40s
+- Total execution time: 102m 17s
 
 **By Phase:**
 
@@ -31,11 +31,11 @@ Progress: ███████████████████░ 100% (19/
 | 02-core-metrics | 5/5 | 20m | 4m |
 | 03-scoring-engine | 4/4 | 17m | 4m 15s |
 | 04-context-generation | 4/4 | 12m | 3m |
-| 05-remediation | 2/5 | 9m 15s | 4m 38s |
+| 05-remediation | 4/5 | 27m | 6m 45s |
 
 **Recent Trend:**
-- Last 5 plans: 04-02 (3m), 04-03 (4m), 04-04 (1m), 05-03 (7m)
-- Trend: Phase 5 started with fix command
+- Last 5 plans: 04-04 (1m), 05-01 (5m), 05-02 (5m), 05-03 (7m), 05-04 (15m)
+- Trend: Phase 5 CLI integration complete
 
 ## Accumulated Context
 
@@ -96,6 +96,9 @@ Recent decisions affecting current work:
 | Java fixer | 05-03 | google-java-format --replace |
 | Ratchet file name | 05-02 | .btar-score for project-level persistence |
 | Delta sign convention | 05-02 | Positive=improvement, negative=regression |
+| Recommendations always shown | 05-04 | Actionable guidance on every analyze run |
+| Ratchet on flag only | 05-04 | --ratchet required for CI opt-in |
+| Helpful no-baseline message | 05-04 | Info level, guide user without failing |
 
 ### Pending Todos
 
@@ -103,23 +106,23 @@ None.
 
 ### Blockers/Concerns
 
-None. Phase 5 in progress.
+None. Phase 5 nearly complete.
 
 ## Session Continuity
 
-Last session: 2026-01-17 22:12:34 UTC
-Stopped at: Completed 05-03-PLAN.md (Fix Command)
+Last session: 2026-01-17 22:30:07 UTC
+Stopped at: Completed 05-04-PLAN.md (CLI Integration)
 Resume file: None
 
 ## Phase 5 Progress
 
 Remediation plans:
-- [ ] 05-01: Recommendations Engine — Not started
+- [x] 05-01: Recommendations Engine — Complete
 - [x] 05-02: Ratchet Mode Score Persistence — Complete
 - [x] 05-03: Fix Command — Complete
-- [ ] 05-04: Suggest Command — Not started
-- [ ] 05-05: Ratchet Command — Not started
+- [x] 05-04: CLI Integration — Complete
+- [ ] 05-05: Ratchet Command — Not started (optional)
 
-**Phase 5 In Progress**
+**Phase 5 Nearly Complete**
 
-Next: 05-01, 05-04, or 05-05 (depending on wave execution)
+Next: 05-05 (if planned) or project complete
