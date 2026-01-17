@@ -11,7 +11,12 @@ import { createProgressReporter } from "../core/progress.js";
 import { runAllMetrics } from "../core/metrics/index.js";
 import { calculateScore } from "../core/scoring.js";
 import { formatAsJson } from "../core/output.js";
-import { generateRecommendations } from "../core/remediation/index.js";
+import {
+  generateRecommendations,
+  loadRatchetScore,
+  saveRatchetScore,
+  checkRatchetRegression,
+} from "../core/remediation/index.js";
 import type { MetricResult } from "../core/metrics/types.js";
 
 /**
@@ -22,6 +27,8 @@ export interface AnalyzeOptions {
   config?: string;
   json?: boolean;
   failUnder?: number;
+  ratchet?: boolean;
+  saveBaseline?: boolean;
 }
 
 /**
@@ -107,6 +114,32 @@ export async function analyzeCommand(
   // Generate recommendations
   const recommendations = generateRecommendations(scoreResult, report);
 
+  // Save baseline if requested
+  if (options.saveBaseline) {
+    await saveRatchetScore(resolvedDir, scoreResult);
+    progress.success(`Baseline score ${scoreResult.score} saved to .btar-score`);
+  }
+
+  // Ratchet check if requested
+  let ratchetFailure = false;
+  let ratchetMessage = "";
+  if (options.ratchet) {
+    const baseline = await loadRatchetScore(resolvedDir);
+    if (!baseline) {
+      progress.info(
+        "No baseline found. Run with --save-baseline first to enable ratchet mode."
+      );
+    } else {
+      const ratchetResult = checkRatchetRegression(scoreResult, baseline);
+      if (!ratchetResult.passed) {
+        ratchetFailure = true;
+        ratchetMessage = `Ratchet failed: Score ${scoreResult.score} is below baseline ${baseline.score} (${ratchetResult.delta})`;
+      } else {
+        progress.success(ratchetResult.message);
+      }
+    }
+  }
+
   // Check quality gate
   const gateFailure =
     options.failUnder !== undefined && scoreResult.score < options.failUnder;
@@ -119,7 +152,7 @@ export async function analyzeCommand(
         recommendations,
       })
     );
-    if (gateFailure) {
+    if (gateFailure || ratchetFailure) {
       process.exit(1);
     }
     return;
@@ -186,6 +219,13 @@ export async function analyzeCommand(
     progress.error(
       `Score ${scoreResult.score} is below threshold ${options.failUnder}`
     );
+    process.exit(1);
+  }
+
+  // Ratchet failure
+  if (ratchetFailure) {
+    progress.error(ratchetMessage);
+    progress.info("Run with --save-baseline to update baseline after fixing issues.");
     process.exit(1);
   }
 }

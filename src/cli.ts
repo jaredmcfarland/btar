@@ -28,6 +28,8 @@ program
     "Exit non-zero if score below threshold",
     parseInt
   )
+  .option("--ratchet", "Enforce no regression from .btar-score baseline")
+  .option("--save-baseline", "Save current score as new baseline")
   .action(async (directory, options) => {
     await analyzeCommand(directory, options);
   });
