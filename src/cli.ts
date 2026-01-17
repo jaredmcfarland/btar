@@ -7,6 +7,7 @@ import { Command } from "commander";
 import { VERSION } from "./index.js";
 import { analyzeCommand } from "./commands/analyze.js";
 import { initCiCommand } from "./commands/init-ci.js";
+import { contextCommand } from "./commands/context.js";
 
 const program = new Command();
 
@@ -41,6 +42,8 @@ program
       force: options.force,
     });
   });
+
+program.addCommand(contextCommand);
 
 program.parseAsync(process.argv).catch((error) => {
   console.error("Error:", error.message);
