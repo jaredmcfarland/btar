@@ -34,9 +34,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Remediation
 
-- [ ] **RMED-01**: User receives tier-based recommendations (prioritized by score range)
-- [ ] **RMED-02**: User can enable ratchet mode to prevent score regressions in CI
-- [ ] **RMED-03**: User can auto-fix lint issues by delegating to language tools
+- [x] **RMED-01**: User receives tier-based recommendations (prioritized by score range)
+- [x] **RMED-02**: User can enable ratchet mode to prevent score regressions in CI
+- [x] **RMED-03**: User can auto-fix lint issues by delegating to language tools
 
 ## v2 Requirements
 
@@ -94,9 +94,9 @@ Which phases cover which requirements. Updated by create-roadmap.
 | CTXT-02 | Phase 4 | Complete |
 | CTXT-03 | Phase 4 | Complete |
 | CTXT-04 | Phase 4 | Complete |
-| RMED-01 | Phase 5 | Pending |
-| RMED-02 | Phase 5 | Pending |
-| RMED-03 | Phase 5 | Pending |
+| RMED-01 | Phase 5 | Complete |
+| RMED-02 | Phase 5 | Complete |
+| RMED-03 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 19 total
@@ -105,4 +105,4 @@ Which phases cover which requirements. Updated by create-roadmap.
 
 ---
 *Requirements defined: 2026-01-15*
-*Last updated: 2026-01-17 after Phase 4 completion*
+*Last updated: 2026-01-17 after Phase 5 completion*

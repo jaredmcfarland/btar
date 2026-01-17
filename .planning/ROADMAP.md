@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Core Metrics** - Type strictness, lint errors, coverage measurement
 - [x] **Phase 3: Scoring Engine** - Composite scoring, CI integration, quality gates
 - [x] **Phase 4: Context Generation** - AGENTS.md validation/generation, hooks
-- [ ] **Phase 5: Remediation** - Recommendations, ratchet mode, auto-fix
+- [x] **Phase 5: Remediation** - Recommendations, ratchet mode, auto-fix
 
 ## Phase Details
 
@@ -106,10 +106,10 @@ Plans:
 **Plans**: 4
 
 Plans:
-- [ ] 05-01: Tier-based recommendations engine (TDD)
-- [ ] 05-02: Ratchet mode score persistence (TDD)
-- [ ] 05-03: Fix command with language tool delegation
-- [ ] 05-04: CLI integration (recommendations + ratchet)
+- [x] 05-01: Tier-based recommendations engine (TDD)
+- [x] 05-02: Ratchet mode score persistence (TDD)
+- [x] 05-03: Fix command with language tool delegation
+- [x] 05-04: CLI integration (recommendations + ratchet)
 
 ## Progress
 
@@ -122,7 +122,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Core Metrics | 5/5 | Complete | 2026-01-17 |
 | 3. Scoring Engine | 4/4 | Complete | 2026-01-17 |
 | 4. Context Generation | 4/4 | Complete | 2026-01-17 |
-| 5. Remediation | 0/4 | Planned | - |
+| 5. Remediation | 4/4 | Complete | 2026-01-17 |
 
 ---
 *Roadmap created: 2026-01-15*
