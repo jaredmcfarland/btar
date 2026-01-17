@@ -6,6 +6,7 @@
 import type { SupportedLanguage, DetectedLanguage } from "./types.js";
 import type { MetricResult } from "./metrics/types.js";
 import type { MetricsReport } from "./metrics/index.js";
+import type { ScoreResult, ScoreInterpretation } from "./scoring.js";
 
 /**
  * Language entry in JSON output
@@ -44,6 +45,16 @@ export interface AnalysisOutput {
     totalLintErrors: number;
     averageCoverage: number;
   };
+  /** Agent-readiness score */
+  score: number;
+  /** Score interpretation */
+  interpretation: ScoreInterpretation;
+  /** Score breakdown by dimension */
+  breakdown: {
+    typeStrictness: number;
+    lintErrors: number;
+    coverage: number;
+  };
 }
 
 /**
@@ -68,16 +79,21 @@ function mapToRecord(
  * Format MetricsReport as JSON string
  *
  * @param report - The metrics report to serialize
+ * @param scoreResult - The calculated score result
  * @returns JSON string with 2-space indentation
  *
  * @example
  * ```ts
  * const report = await runAllMetrics({ directory: ".", languages });
- * const json = formatAsJson(report);
+ * const scoreResult = calculateScore(report);
+ * const json = formatAsJson(report, scoreResult);
  * console.log(json); // Valid JSON output
  * ```
  */
-export function formatAsJson(report: MetricsReport): string {
+export function formatAsJson(
+  report: MetricsReport,
+  scoreResult: ScoreResult
+): string {
   const output: AnalysisOutput = {
     languages: report.languages.map((l) => ({
       language: l.language,
@@ -93,6 +109,13 @@ export function formatAsJson(report: MetricsReport): string {
       totalTypeErrors: report.summary.totalTypeErrors,
       totalLintErrors: report.summary.totalLintErrors,
       averageCoverage: report.summary.averageCoverage,
+    },
+    score: scoreResult.score,
+    interpretation: scoreResult.interpretation,
+    breakdown: {
+      typeStrictness: scoreResult.breakdown.typeStrictness,
+      lintErrors: scoreResult.breakdown.lintErrors,
+      coverage: scoreResult.breakdown.coverage,
     },
   };
 

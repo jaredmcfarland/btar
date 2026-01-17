@@ -9,6 +9,7 @@ import { loadConfig } from "../core/config.js";
 import { detectLanguages } from "../core/detector.js";
 import { createProgressReporter } from "../core/progress.js";
 import { runAllMetrics } from "../core/metrics/index.js";
+import { calculateScore } from "../core/scoring.js";
 import { formatAsJson } from "../core/output.js";
 import type { MetricResult } from "../core/metrics/types.js";
 
@@ -98,9 +99,12 @@ export async function analyzeCommand(
         },
   });
 
+  // Calculate score
+  const scoreResult = calculateScore(report);
+
   // JSON output mode
   if (options.json) {
-    console.log(formatAsJson(report));
+    console.log(formatAsJson(report, scoreResult));
     return;
   }
 
@@ -146,4 +150,8 @@ export async function analyzeCommand(
   progress.summary("Type errors", report.summary.totalTypeErrors);
   progress.summary("Lint errors", report.summary.totalLintErrors);
   progress.summary("Coverage", `${report.summary.averageCoverage}%`);
+  progress.summary(
+    "Score",
+    `${scoreResult.score}/100 (${scoreResult.interpretation})`
+  );
 }
