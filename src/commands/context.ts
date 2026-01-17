@@ -1,0 +1,214 @@
+/**
+ * Context Command
+ * Provides subcommands for context file validation and generation
+ */
+
+import { Command } from "commander";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, resolve, basename } from "node:path";
+import { loadConfig } from "../core/config.js";
+import { detectLanguages } from "../core/detector.js";
+import {
+  validateAgentsMd,
+  generateAgentsMd,
+} from "../core/context/agents-md.js";
+import { generatePreCommitConfig } from "../core/context/pre-commit.js";
+import {
+  generateClaudeHooks,
+  formatAsSettingsJson,
+} from "../core/context/claude-hooks.js";
+
+/**
+ * Context command with validate and generate subcommands
+ */
+export const contextCommand = new Command("context")
+  .description("Validate and generate context files for AI coding agents");
+
+/**
+ * Validate AGENTS.md file
+ */
+contextCommand
+  .command("validate [path]")
+  .description("Validate an AGENTS.md file")
+  .action(async (path?: string) => {
+    const filePath = resolve(path ?? "./AGENTS.md");
+
+    const result = await validateAgentsMd(filePath);
+
+    if (!result.exists) {
+      console.error(`File not found: ${filePath}`);
+      process.exit(1);
+    }
+
+    if (result.issues.length === 0) {
+      console.log("Valid AGENTS.md file");
+      console.log(`Sections found: ${result.sections.join(", ")}`);
+      return;
+    }
+
+    console.log("Issues found:");
+    for (const issue of result.issues) {
+      console.log(`  - ${issue}`);
+    }
+    process.exit(1);
+  });
+
+/**
+ * Generate subcommand group
+ */
+const generateCommand = new Command("generate").description(
+  "Generate context files"
+);
+
+/**
+ * Generate AGENTS.md
+ */
+generateCommand
+  .command("agents-md [directory]")
+  .description("Generate AGENTS.md for a project")
+  .option("-o, --output <path>", "Output file path (default: AGENTS.md)")
+  .option("-f, --force", "Overwrite existing file")
+  .action(async (directory?: string, options?: { output?: string; force?: boolean }) => {
+    const dir = resolve(directory ?? ".");
+    const outputPath = resolve(options?.output ?? "AGENTS.md");
+
+    // Check if output exists and force not set
+    if (existsSync(outputPath) && !options?.force) {
+      console.error(`File already exists: ${outputPath}`);
+      console.error("Use --force to overwrite");
+      process.exit(1);
+    }
+
+    // Load config and detect languages
+    const config = await loadConfig(dir);
+    const languages = await detectLanguages(dir, config);
+
+    if (languages.length === 0) {
+      console.error("No supported languages detected");
+      process.exit(1);
+    }
+
+    // Generate AGENTS.md
+    const projectName = basename(dir);
+    const content = generateAgentsMd({
+      projectName,
+      languages,
+    });
+
+    // Ensure output directory exists
+    const outputDir = dirname(outputPath);
+    if (!existsSync(outputDir)) {
+      mkdirSync(outputDir, { recursive: true });
+    }
+
+    writeFileSync(outputPath, content, "utf-8");
+    console.log(`Generated: ${outputPath}`);
+    console.log(`Languages: ${languages.map((l) => l.language).join(", ")}`);
+  });
+
+/**
+ * Generate .pre-commit-config.yaml
+ */
+generateCommand
+  .command("pre-commit [directory]")
+  .description("Generate .pre-commit-config.yaml for a project")
+  .option(
+    "-o, --output <path>",
+    "Output file path (default: .pre-commit-config.yaml)"
+  )
+  .option("-f, --force", "Overwrite existing file")
+  .action(async (directory?: string, options?: { output?: string; force?: boolean }) => {
+    const dir = resolve(directory ?? ".");
+    const outputPath = resolve(options?.output ?? ".pre-commit-config.yaml");
+
+    // Check if output exists and force not set
+    if (existsSync(outputPath) && !options?.force) {
+      console.error(`File already exists: ${outputPath}`);
+      console.error("Use --force to overwrite");
+      process.exit(1);
+    }
+
+    // Load config and detect languages
+    const config = await loadConfig(dir);
+    const languages = await detectLanguages(dir, config);
+
+    if (languages.length === 0) {
+      console.error("No supported languages detected");
+      process.exit(1);
+    }
+
+    // Generate pre-commit config
+    const content = generatePreCommitConfig(languages);
+
+    // Ensure output directory exists
+    const outputDir = dirname(outputPath);
+    if (!existsSync(outputDir)) {
+      mkdirSync(outputDir, { recursive: true });
+    }
+
+    writeFileSync(outputPath, content, "utf-8");
+    console.log(`Generated: ${outputPath}`);
+    console.log(`Languages: ${languages.map((l) => l.language).join(", ")}`);
+  });
+
+/**
+ * Generate Claude Code hooks (.claude/settings.json)
+ */
+generateCommand
+  .command("hooks [directory]")
+  .description("Generate Claude Code hooks configuration")
+  .option(
+    "-o, --output <path>",
+    "Output file path (default: .claude/settings.json)"
+  )
+  .option("-f, --force", "Overwrite existing file")
+  .option("--no-pre", "Disable pre-tool hooks")
+  .option("--no-post", "Disable post-tool hooks")
+  .action(
+    async (
+      directory?: string,
+      options?: {
+        output?: string;
+        force?: boolean;
+        pre?: boolean;
+        post?: boolean;
+      }
+    ) => {
+      const dir = resolve(directory ?? ".");
+      const outputPath = resolve(options?.output ?? ".claude/settings.json");
+
+      // Check if output exists and force not set
+      if (existsSync(outputPath) && !options?.force) {
+        console.error(`File already exists: ${outputPath}`);
+        console.error("Use --force to overwrite");
+        process.exit(1);
+      }
+
+      // Generate hooks config
+      const config = generateClaudeHooks({
+        projectPath: dir,
+        enablePreCommit: options?.pre !== false,
+        enablePostCommit: options?.post !== false,
+      });
+
+      const content = formatAsSettingsJson(config);
+
+      // Ensure output directory exists
+      const outputDir = dirname(outputPath);
+      if (!existsSync(outputDir)) {
+        mkdirSync(outputDir, { recursive: true });
+      }
+
+      writeFileSync(outputPath, content, "utf-8");
+      console.log(`Generated: ${outputPath}`);
+
+      // Report what hooks were enabled
+      const hooks: string[] = [];
+      if (options?.pre !== false) hooks.push("PreToolUse");
+      if (options?.post !== false) hooks.push("PostToolUse");
+      console.log(`Hooks: ${hooks.join(", ")}`);
+    }
+  );
+
+// Add generate subcommand to context
+contextCommand.addCommand(generateCommand);
