@@ -7,6 +7,7 @@ import type { SupportedLanguage, DetectedLanguage } from "./types.js";
 import type { MetricResult } from "./metrics/types.js";
 import type { MetricsReport } from "./metrics/index.js";
 import type { ScoreResult, ScoreInterpretation } from "./scoring.js";
+import type { Recommendation } from "./remediation/index.js";
 
 /**
  * Language entry in JSON output
@@ -33,11 +34,29 @@ export interface MetricOutput {
 export type GateResult = "passed" | "failed";
 
 /**
+ * Recommendation entry in JSON output
+ */
+export interface RecommendationOutput {
+  /** Priority tier (P0 = highest) */
+  tier: string;
+  /** Category of the recommendation */
+  category: string;
+  /** Human-readable recommendation message */
+  message: string;
+  /** Impact level of implementing this recommendation */
+  impact: string;
+  /** Optional tool command suggestion */
+  tool?: string;
+}
+
+/**
  * Options for JSON formatting
  */
 export interface FormatJsonOptions {
   /** Quality gate threshold (if set, gateResult will be included) */
   failUnder?: number;
+  /** Recommendations to include in output */
+  recommendations?: Recommendation[];
 }
 
 /**
@@ -70,6 +89,8 @@ export interface AnalysisOutput {
   };
   /** Quality gate result (only present if --fail-under was specified) */
   gateResult?: GateResult;
+  /** Actionable recommendations (always present) */
+  recommendations: RecommendationOutput[];
 }
 
 /**
@@ -111,6 +132,22 @@ export function formatAsJson(
   scoreResult: ScoreResult,
   options?: FormatJsonOptions
 ): string {
+  // Map recommendations to output format
+  const recommendationsOutput: RecommendationOutput[] = (
+    options?.recommendations ?? []
+  ).map((rec) => {
+    const output: RecommendationOutput = {
+      tier: rec.tier,
+      category: rec.category,
+      message: rec.message,
+      impact: rec.impact,
+    };
+    if (rec.tool) {
+      output.tool = rec.tool;
+    }
+    return output;
+  });
+
   const output: AnalysisOutput = {
     languages: report.languages.map((l) => ({
       language: l.language,
@@ -134,6 +171,7 @@ export function formatAsJson(
       lintErrors: scoreResult.breakdown.lintErrors,
       coverage: scoreResult.breakdown.coverage,
     },
+    recommendations: recommendationsOutput,
   };
 
   // Add gate result if threshold was specified

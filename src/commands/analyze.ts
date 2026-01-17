@@ -11,6 +11,7 @@ import { createProgressReporter } from "../core/progress.js";
 import { runAllMetrics } from "../core/metrics/index.js";
 import { calculateScore } from "../core/scoring.js";
 import { formatAsJson } from "../core/output.js";
+import { generateRecommendations } from "../core/remediation/index.js";
 import type { MetricResult } from "../core/metrics/types.js";
 
 /**
@@ -103,6 +104,9 @@ export async function analyzeCommand(
   // Calculate score
   const scoreResult = calculateScore(report);
 
+  // Generate recommendations
+  const recommendations = generateRecommendations(scoreResult, report);
+
   // Check quality gate
   const gateFailure =
     options.failUnder !== undefined && scoreResult.score < options.failUnder;
@@ -110,7 +114,10 @@ export async function analyzeCommand(
   // JSON output mode
   if (options.json) {
     console.log(
-      formatAsJson(report, scoreResult, { failUnder: options.failUnder })
+      formatAsJson(report, scoreResult, {
+        failUnder: options.failUnder,
+        recommendations,
+      })
     );
     if (gateFailure) {
       process.exit(1);
@@ -164,6 +171,15 @@ export async function analyzeCommand(
     "Score",
     `${scoreResult.score}/100 (${scoreResult.interpretation})`
   );
+
+  // Recommendations
+  if (recommendations.length > 0) {
+    progress.section("Recommendations:");
+    for (const rec of recommendations) {
+      const toolHint = rec.tool ? ` (run: ${rec.tool})` : "";
+      progress.info(`  ${rec.tier}: ${rec.message}${toolHint}`);
+    }
+  }
 
   // Quality gate enforcement
   if (gateFailure) {
