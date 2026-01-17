@@ -19,6 +19,7 @@ program
   .description("Analyze codebase for agent-readiness")
   .option("-q, --quiet", "Suppress progress output")
   .option("-c, --config <path>", "Path to config file")
+  .option("-j, --json", "Output results as JSON")
   .action(async (directory, options) => {
     await analyzeCommand(directory, options);
   });

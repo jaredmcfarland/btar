@@ -9,6 +9,7 @@ import { loadConfig } from "../core/config.js";
 import { detectLanguages } from "../core/detector.js";
 import { createProgressReporter } from "../core/progress.js";
 import { runAllMetrics } from "../core/metrics/index.js";
+import { formatAsJson } from "../core/output.js";
 import type { MetricResult } from "../core/metrics/types.js";
 
 /**
@@ -17,6 +18,7 @@ import type { MetricResult } from "../core/metrics/types.js";
 export interface AnalyzeOptions {
   quiet?: boolean;
   config?: string;
+  json?: boolean;
 }
 
 /**
@@ -41,12 +43,19 @@ export async function analyzeCommand(
   directory: string,
   options: AnalyzeOptions = {}
 ): Promise<void> {
-  const progress = createProgressReporter({ quiet: options.quiet });
+  // JSON mode uses quiet progress (no text output)
+  const progress = createProgressReporter({
+    quiet: options.quiet || options.json,
+  });
   const resolvedDir = resolve(directory);
 
   // Validate directory exists
   if (!existsSync(resolvedDir)) {
-    progress.error(`Directory not found: ${resolvedDir}`);
+    if (options.json) {
+      console.error(`Directory not found: ${resolvedDir}`);
+    } else {
+      progress.error(`Directory not found: ${resolvedDir}`);
+    }
     process.exit(1);
   }
 
@@ -59,25 +68,43 @@ export async function analyzeCommand(
   const languages = await detectLanguages(resolvedDir, config);
 
   if (languages.length === 0) {
-    progress.info("No supported languages detected");
+    if (options.json) {
+      console.log(
+        JSON.stringify(
+          { languages: [], metrics: {}, summary: {} },
+          null,
+          2
+        )
+      );
+    } else {
+      progress.info("No supported languages detected");
+    }
     return;
   }
 
   const languageNames = languages.map((l) => l.language).join(", ");
   progress.success(`Found: ${languageNames}`);
 
-  // Run metrics
+  // Run metrics (no progress callback in JSON mode)
   const report = await runAllMetrics({
     directory: resolvedDir,
     languages,
-    onProgress: (metric, status) => {
-      if (status === "start") {
-        progress.info(`Measuring ${metric}...`);
-      }
-    },
+    onProgress: options.json
+      ? undefined
+      : (metric, status) => {
+          if (status === "start") {
+            progress.info(`Measuring ${metric}...`);
+          }
+        },
   });
 
-  // Output metrics section
+  // JSON output mode
+  if (options.json) {
+    console.log(formatAsJson(report));
+    return;
+  }
+
+  // Text output mode
   progress.section("Metrics:");
 
   // Type Strictness
