@@ -184,9 +184,9 @@ generateCommand
         process.exit(1);
       }
 
-      // Generate hooks config
+      // Generate hooks config - use "." for current directory (more portable)
       const config = generateClaudeHooks({
-        projectPath: dir,
+        projectPath: directory ? dir : ".",
         enablePreCommit: options?.pre !== false,
         enablePostCommit: options?.post !== false,
       });

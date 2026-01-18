@@ -70,7 +70,6 @@ export async function runTool(options: RunToolOptions): Promise<ToolResult> {
     let stdout = "";
     let stderr = "";
     let timedOut = false;
-    let timeoutId: NodeJS.Timeout | undefined;
 
     const child = spawn(executable, args, {
       cwd,
@@ -79,7 +78,7 @@ export async function runTool(options: RunToolOptions): Promise<ToolResult> {
     });
 
     // Handle timeout
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       timedOut = true;
       child.kill("SIGKILL");
     }, timeout);

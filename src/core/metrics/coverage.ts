@@ -3,6 +3,8 @@
  * Measures test coverage percentage across different languages
  */
 
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
 import type { SupportedLanguage } from "../types.js";
 import type { MetricResult, MetricParser } from "./types.js";
 import { runTool } from "./runner.js";
@@ -215,6 +217,74 @@ export const COVERAGE_TOOLS: Record<SupportedLanguage, CoverageTool> = {
 };
 
 /**
+ * Check if a file exists
+ */
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Detect the appropriate coverage tool for TypeScript/JavaScript projects
+ * Checks for vitest, jest, or falls back to c8
+ */
+async function detectJsCoverageTool(directory: string): Promise<CoverageTool> {
+  // Check for vitest config
+  const vitestConfigs = [
+    "vitest.config.ts",
+    "vitest.config.js",
+    "vitest.config.mts",
+    "vitest.config.mjs",
+  ];
+
+  for (const config of vitestConfigs) {
+    if (await fileExists(path.join(directory, config))) {
+      return {
+        tool: "vitest",
+        command: ["npx", "vitest", "run", "--coverage"],
+        parseCoverage: parseC8Coverage,
+      };
+    }
+  }
+
+  // Check package.json for vitest in devDependencies
+  try {
+    const pkgPath = path.join(directory, "package.json");
+    const pkgContent = await fs.readFile(pkgPath, "utf-8");
+    const pkg = JSON.parse(pkgContent) as { devDependencies?: Record<string, string>; dependencies?: Record<string, string> };
+
+    if (pkg.devDependencies?.vitest || pkg.dependencies?.vitest) {
+      return {
+        tool: "vitest",
+        command: ["npx", "vitest", "run", "--coverage"],
+        parseCoverage: parseC8Coverage,
+      };
+    }
+
+    // Check for jest
+    // Jest uses Istanbul format (not c8), so use parseGenericCoverage
+    if (pkg.devDependencies?.jest || pkg.dependencies?.jest) {
+      return {
+        tool: "jest",
+        command: ["npx", "jest", "--coverage", "--coverageReporters=text-summary"],
+        parseCoverage: parseGenericCoverage,
+      };
+    }
+  } catch {
+    // Ignore errors when reading or parsing package.json.
+    // This is expected if package.json is missing or malformed.
+    // The detection will fall back to the default coverage tool.
+  }
+
+  // Default to c8
+  return COVERAGE_TOOLS.typescript;
+}
+
+/**
  * Measure test coverage for a project
  *
  * @param language - The language to measure coverage for
@@ -233,7 +303,13 @@ export async function measureCoverage(
   language: SupportedLanguage,
   directory: string
 ): Promise<MetricResult> {
-  const toolConfig = COVERAGE_TOOLS[language];
+  // For JS/TS, detect the appropriate tool
+  let toolConfig: CoverageTool;
+  if (language === "typescript" || language === "javascript") {
+    toolConfig = await detectJsCoverageTool(directory);
+  } else {
+    toolConfig = COVERAGE_TOOLS[language];
+  }
 
   // Extended timeout for coverage (runs tests, can be slow)
   const COVERAGE_TIMEOUT = 120000; // 2 minutes

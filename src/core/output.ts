@@ -3,7 +3,7 @@
  * JSON serialization for analysis results
  */
 
-import type { SupportedLanguage, DetectedLanguage } from "./types.js";
+import type { SupportedLanguage } from "./types.js";
 import type { MetricResult } from "./metrics/types.js";
 import type { MetricsReport } from "./metrics/index.js";
 import type { ScoreResult, ScoreInterpretation } from "./scoring.js";
