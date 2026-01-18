@@ -266,15 +266,18 @@ async function detectJsCoverageTool(directory: string): Promise<CoverageTool> {
     }
 
     // Check for jest
+    // Jest uses Istanbul format (not c8), so use parseGenericCoverage
     if (pkg.devDependencies?.jest || pkg.dependencies?.jest) {
       return {
         tool: "jest",
         command: ["npx", "jest", "--coverage", "--coverageReporters=text-summary"],
-        parseCoverage: parseC8Coverage,
+        parseCoverage: parseGenericCoverage,
       };
     }
   } catch {
-    // Ignore parse errors
+    // Ignore errors when reading or parsing package.json.
+    // This is expected if package.json is missing or malformed.
+    // The detection will fall back to the default coverage tool.
   }
 
   // Default to c8
