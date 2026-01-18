@@ -1,7 +1,3 @@
-# Self-test: Run BTAR analysis on this repository
-# This serves as both a working example and validation that the workflow syntax is correct.
-# Generated with: btar init-ci --threshold 50
-
 name: BTAR Analysis
 
 on:
@@ -20,12 +16,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Install BTAR
-        run: npm install -g btar
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
 
       - name: Run Analysis
-        run: btar analyze . --json --fail-under 50
+        run: node dist/cli.js analyze . --json --fail-under 80
 
       - name: Upload Results
         if: always()

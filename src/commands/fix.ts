@@ -65,7 +65,7 @@ export async function fixCommand(
   progress.success(`Found: ${languageNames}`);
 
   // Run fix for each language
-  const results: Map<SupportedLanguage, FixResult> = new Map();
+  const results = new Map<SupportedLanguage, FixResult>();
   let hasFailures = false;
 
   for (const lang of languages) {

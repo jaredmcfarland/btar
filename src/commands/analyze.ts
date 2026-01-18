@@ -101,7 +101,7 @@ export async function analyzeCommand(
     languages,
     onProgress: options.json
       ? undefined
-      : (metric, status) => {
+      : (metric: string, status: string): void => {
           if (status === "start") {
             progress.info(`Measuring ${metric}...`);
           }
@@ -186,12 +186,11 @@ export async function analyzeCommand(
   // Test Coverage
   progress.section("Test Coverage");
   for (const [lang, result] of report.metrics.coverage) {
-    const isCoverageGood = result.success && result.value >= 70;
     progress.metric(
       lang,
       result.tool,
       formatMetricValue(result),
-      result.success && isCoverageGood
+      result.success
     );
   }
 

@@ -89,12 +89,15 @@ export function generateClaudeHooks(options: ClaudeHooksOptions): ClaudeHooksCon
     hooks: {},
   };
 
+  // Use "." for relative paths (more portable)
+  const pathArg = projectPath === "." ? "." : projectPath;
+
   // PreToolUse hooks: Run before file modifications
   if (enablePreCommit) {
     const preHooks: ClaudeHook[] = [
       {
         type: "command",
-        command: `npx tsc --noEmit --project "${projectPath}"`,
+        command: pathArg === "." ? "npx tsc --noEmit" : `npx tsc --noEmit --project "${pathArg}"`,
       },
     ];
 
@@ -113,7 +116,7 @@ export function generateClaudeHooks(options: ClaudeHooksOptions): ClaudeHooksCon
     if (enablePostCommit) {
       postHooks.push({
         type: "command",
-        command: `btar analyze "${projectPath}" --json`,
+        command: pathArg === "." ? "btar analyze . --json" : `btar analyze "${pathArg}" --json`,
       });
     }
 
