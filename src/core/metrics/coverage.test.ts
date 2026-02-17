@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { COVERAGE_TOOLS, measureCoverage } from "./coverage.js";
+import { COVERAGE_TOOLS, measureCoverage, parseJacocoCoverage } from "./coverage.js";
 import * as runner from "./runner.js";
 
 // Mock the runner module
@@ -163,6 +163,60 @@ ok  	example.com/pkg2	0.012s	coverage: 60.0% of statements
 ok  	example.com/pkg	0.015s	coverage: 100% of statements
 `;
       expect(parser(stdout, "", 0)).toBe(100);
+    });
+  });
+
+  describe("JaCoCo XML parser", () => {
+    it("parses LINE counter from JaCoCo XML", () => {
+      const xml = `<?xml version="1.0"?>
+<report name="test">
+  <counter type="INSTRUCTION" missed="100" covered="200"/>
+  <counter type="BRANCH" missed="10" covered="30"/>
+  <counter type="LINE" missed="50" covered="150"/>
+  <counter type="METHOD" missed="5" covered="20"/>
+</report>`;
+      // 150 / (50 + 150) = 0.75 = 75%
+      expect(parseJacocoCoverage(xml)).toBe(75);
+    });
+
+    it("returns 0 when no LINE counter found", () => {
+      const xml = `<?xml version="1.0"?><report name="test"></report>`;
+      expect(parseJacocoCoverage(xml)).toBe(0);
+    });
+
+    it("returns 0 when total is 0", () => {
+      const xml = `<counter type="LINE" missed="0" covered="0"/>`;
+      expect(parseJacocoCoverage(xml)).toBe(0);
+    });
+
+    it("handles 100% coverage", () => {
+      const xml = `<counter type="LINE" missed="0" covered="200"/>`;
+      expect(parseJacocoCoverage(xml)).toBe(100);
+    });
+
+    it("rounds to one decimal place", () => {
+      const xml = `<counter type="LINE" missed="1" covered="2"/>`;
+      // 2/3 = 66.666... → 66.7
+      expect(parseJacocoCoverage(xml)).toBe(66.7);
+    });
+
+    it("uses last LINE counter (report-level aggregate) not first (method-level)", () => {
+      const xml = `<?xml version="1.0"?>
+<report name="test">
+  <package name="com/example">
+    <class name="com/example/Foo">
+      <method name="bar" desc="()V" line="5">
+        <counter type="LINE" missed="3" covered="0"/>
+      </method>
+      <counter type="LINE" missed="3" covered="0"/>
+    </class>
+    <counter type="LINE" missed="3" covered="0"/>
+  </package>
+  <counter type="LINE" missed="50" covered="150"/>
+</report>`;
+      // Should use last match (report-level): 150/(50+150) = 75%
+      // NOT first match (method-level): 0/(3+0) = 0%
+      expect(parseJacocoCoverage(xml)).toBe(75);
     });
   });
 });

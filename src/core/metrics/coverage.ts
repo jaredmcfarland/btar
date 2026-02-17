@@ -5,7 +5,7 @@
 
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import type { SupportedLanguage } from "../types.js";
+import type { DetectedLanguage, SupportedLanguage } from "../types.js";
 import type { MetricResult, MetricParser } from "./types.js";
 import { runTool } from "./runner.js";
 
@@ -166,6 +166,77 @@ function parseGenericCoverage(stdout: string, _stderr: string, exitCode: number)
 }
 
 /**
+ * Parse JaCoCo XML report for line coverage percentage
+ * Uses the LAST <counter type="LINE"> match, which is the report-level
+ * aggregate in standard JaCoCo XML (method→class→package→report order).
+ */
+export function parseJacocoCoverage(xmlContent: string): number {
+  // Find ALL LINE counters and use the last one (report-level aggregate)
+  const linePattern =
+    /<counter\s+type="LINE"\s+missed="(\d+)"\s+covered="(\d+)"\s*\/>/g;
+  let lastMatch: RegExpExecArray | null = null;
+  let match: RegExpExecArray | null;
+  while ((match = linePattern.exec(xmlContent)) !== null) {
+    lastMatch = match;
+  }
+
+  if (lastMatch) {
+    const missed = parseInt(lastMatch[1], 10);
+    const covered = parseInt(lastMatch[2], 10);
+    const total = missed + covered;
+    if (total === 0) return 0;
+    return Math.round((covered / total) * 1000) / 10; // One decimal place
+  }
+
+  return 0;
+}
+
+/**
+ * Detect the appropriate coverage tool for Java/Kotlin Gradle projects
+ */
+async function detectJavaCoverageTool(
+  directory: string,
+  detected: DetectedLanguage
+): Promise<CoverageTool> {
+  if (detected.buildSystem !== "gradle") {
+    return COVERAGE_TOOLS.java; // Default Maven-based
+  }
+
+  // Check if there are JVM unit tests (src/test/)
+  const hasJvmTests = await fileExists(path.join(directory, "src", "test"));
+
+  if (hasJvmTests) {
+    return {
+      tool: "jacoco (gradle)",
+      command: ["./gradlew", "test", "jacocoTestReport"],
+      parseCoverage: (_stdout, _stderr, _exitCode) => {
+        // Coverage is parsed from XML report file, not stdout
+        // Return 0 here; actual parsing happens in measureCoverage
+        return 0;
+      },
+    };
+  }
+
+  // For Android instrumented tests (requires emulator)
+  if (detected.isAndroid) {
+    return {
+      tool: "jacoco (android)",
+      command: ["./gradlew", "createDebugCoverageReport"],
+      parseCoverage: (_stdout, _stderr, _exitCode) => {
+        return 0; // Parsed from XML report
+      },
+    };
+  }
+
+  // Default Gradle test
+  return {
+    tool: "jacoco (gradle)",
+    command: ["./gradlew", "test", "jacocoTestReport"],
+    parseCoverage: parseGenericCoverage,
+  };
+}
+
+/**
  * Coverage tools mapping by language
  */
 export const COVERAGE_TOOLS: Record<SupportedLanguage, CoverageTool> = {
@@ -300,13 +371,21 @@ async function detectJsCoverageTool(directory: string): Promise<CoverageTool> {
  * ```
  */
 export async function measureCoverage(
-  language: SupportedLanguage,
+  languageOrDetected: SupportedLanguage | DetectedLanguage,
   directory: string
 ): Promise<MetricResult> {
+  // Normalize input
+  const detected: DetectedLanguage | undefined =
+    typeof languageOrDetected === "string" ? undefined : languageOrDetected;
+  const language: SupportedLanguage =
+    typeof languageOrDetected === "string" ? languageOrDetected : languageOrDetected.language;
+
   // For JS/TS, detect the appropriate tool
   let toolConfig: CoverageTool;
   if (language === "typescript" || language === "javascript") {
     toolConfig = await detectJsCoverageTool(directory);
+  } else if (detected && (language === "java" || language === "kotlin") && detected.buildSystem === "gradle") {
+    toolConfig = await detectJavaCoverageTool(directory, detected);
   } else {
     toolConfig = COVERAGE_TOOLS[language];
   }
@@ -320,8 +399,46 @@ export async function measureCoverage(
     timeout: COVERAGE_TIMEOUT,
   });
 
-  // Parse coverage percentage from output
-  const value = toolConfig.parseCoverage(result.stdout, result.stderr, result.exitCode);
+  // For Gradle JaCoCo, try to parse XML report file
+  let value: number;
+  if (detected?.buildSystem === "gradle" && (language === "java" || language === "kotlin")) {
+    // Try to find and parse JaCoCo XML report
+    const reportPaths = [
+      path.join(directory, "build", "reports", "jacoco", "test", "jacocoTestReport.xml"),
+      path.join(directory, "build", "reports", "coverage", "debug", "report.xml"),
+      path.join(directory, "build", "reports", "jacoco", "jacocoTestReport.xml"),
+    ];
+
+    let xmlCoverage = 0;
+    for (const reportPath of reportPaths) {
+      try {
+        const xmlContent = await fs.readFile(reportPath, "utf-8");
+        xmlCoverage = parseJacocoCoverage(xmlContent);
+        if (xmlCoverage > 0) break;
+      } catch {
+        // Report file not found, try next path
+      }
+    }
+
+    // Use XML coverage if found, otherwise fall back to stdout parsing
+    value = xmlCoverage > 0
+      ? xmlCoverage
+      : toolConfig.parseCoverage(result.stdout, result.stderr, result.exitCode);
+
+    // Check for "No connected devices" error (Android tests need emulator)
+    if (result.stderr.includes("No connected devices") || result.stderr.includes("DeviceException")) {
+      return {
+        metric: "test_coverage",
+        tool: toolConfig.tool,
+        value: -1,
+        success: false,
+        raw: "No connected Android device/emulator for instrumented tests. Use JVM tests (src/test/) instead.",
+      };
+    }
+  } else {
+    // Parse coverage percentage from output
+    value = toolConfig.parseCoverage(result.stdout, result.stderr, result.exitCode);
+  }
 
   // Tool not found
   if (value === -1) {
