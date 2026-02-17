@@ -87,23 +87,25 @@ export async function runAllMetrics(
   const coverage = new Map<SupportedLanguage, MetricResult>();
 
   // Run metrics for each language
-  // Within a language, run all three metrics in parallel
-  for (const { language } of languages) {
+  // Pass full DetectedLanguage to metric functions for build system awareness
+  for (const detectedLang of languages) {
+    const { language } = detectedLang;
+
     // Type strictness
     onProgress?.("Type Strictness", "start");
-    const typeResult = await measureTypeStrictness(language, directory);
+    const typeResult = await measureTypeStrictness(detectedLang, directory);
     typeStrictness.set(language, typeResult);
     onProgress?.("Type Strictness", "done", typeResult);
 
     // Lint errors
     onProgress?.("Lint Errors", "start");
-    const lintResult = await measureLintErrors(language, directory);
+    const lintResult = await measureLintErrors(detectedLang, directory);
     lintErrors.set(language, lintResult);
     onProgress?.("Lint Errors", "done", lintResult);
 
     // Coverage
     onProgress?.("Test Coverage", "start");
-    const coverageResult = await measureCoverage(language, directory);
+    const coverageResult = await measureCoverage(detectedLang, directory);
     coverage.set(language, coverageResult);
     onProgress?.("Test Coverage", "done", coverageResult);
   }

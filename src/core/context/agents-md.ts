@@ -27,6 +27,7 @@ export interface AgentsMdOptions {
   buildCommand?: string;
   testCommand?: string;
   lintCommand?: string;
+  buildSystem?: string;
 }
 
 /**
@@ -80,9 +81,9 @@ const LANGUAGE_CONFIG: Record<SupportedLanguage, LanguageConfig> = {
     styleNotes: "- Follow Java naming conventions\n- Use Checkstyle for enforcement",
   },
   kotlin: {
-    build: "gradle build",
-    test: "gradle test",
-    lint: "gradle ktlintCheck",
+    build: "./gradlew build",
+    test: "./gradlew test",
+    lint: "./gradlew ktlintCheck",
     styleNotes: "- Follow Kotlin coding conventions\n- Use ktlint for formatting",
   },
   swift: {
@@ -189,7 +190,18 @@ export function generateAgentsMd(options: AgentsMdOptions): string {
 
   // Get primary language for defaults
   const primaryLang = languages[0]?.language ?? "typescript";
-  const config = LANGUAGE_CONFIG[primaryLang];
+  const primaryDetected = languages[0];
+  let config = LANGUAGE_CONFIG[primaryLang];
+
+  // Override with Gradle commands for Java when Gradle build system detected
+  if (primaryLang === "java" && (primaryDetected?.buildSystem === "gradle" || options.buildSystem === "gradle")) {
+    config = {
+      build: "./gradlew build",
+      test: primaryDetected?.isAndroid ? "./gradlew test" : "./gradlew test",
+      lint: "./gradlew lint",
+      styleNotes: "- Follow Java naming conventions\n- Use Android Lint for enforcement",
+    };
+  }
 
   // Use custom commands or language defaults
   const build = buildCommand ?? config.build;

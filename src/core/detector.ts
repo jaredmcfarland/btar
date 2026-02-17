@@ -5,7 +5,7 @@
 
 import { readdirSync, existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
-import type { BTARConfig, DetectedLanguage, SupportedLanguage } from "./types.js";
+import type { BTARConfig, BuildSystem, DetectedLanguage, SupportedLanguage } from "./types.js";
 
 /**
  * Language marker definitions
@@ -105,6 +105,59 @@ function hasTypescriptDependency(packageJsonPath: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Detect the build system used for a given language in a directory
+ */
+export function detectBuildSystem(directory: string, language: SupportedLanguage): { buildSystem: BuildSystem; isAndroid: boolean } {
+  if (language === "java" || language === "kotlin") {
+    // Check for Gradle (Android/Gradle projects)
+    const hasGradlew = existsSync(join(directory, "gradlew"));
+    const hasBuildGradle = existsSync(join(directory, "build.gradle"));
+    const hasBuildGradleKts = existsSync(join(directory, "build.gradle.kts"));
+
+    if (hasGradlew || hasBuildGradle || hasBuildGradleKts) {
+      // Detect if it's an Android project
+      let isAndroid = existsSync(join(directory, "src", "main", "AndroidManifest.xml"));
+
+      if (!isAndroid && (hasBuildGradle || hasBuildGradleKts)) {
+        try {
+          const gradleFile = hasBuildGradle ? "build.gradle" : "build.gradle.kts";
+          const content = readFileSync(join(directory, gradleFile), "utf-8");
+          isAndroid = content.includes("com.android.library") ||
+                      content.includes("com.android.application");
+        } catch {
+          // Ignore read errors
+        }
+      }
+
+      return { buildSystem: "gradle", isAndroid };
+    }
+
+    // Check for Maven
+    if (existsSync(join(directory, "pom.xml"))) {
+      return { buildSystem: "maven", isAndroid: false };
+    }
+
+    return { buildSystem: "none", isAndroid: false };
+  }
+
+  if (language === "typescript" || language === "javascript") {
+    if (existsSync(join(directory, "package.json"))) {
+      return { buildSystem: "npm", isAndroid: false };
+    }
+    return { buildSystem: "none", isAndroid: false };
+  }
+
+  if (language === "go") {
+    if (existsSync(join(directory, "go.mod"))) {
+      return { buildSystem: "go-mod", isAndroid: false };
+    }
+    return { buildSystem: "none", isAndroid: false };
+  }
+
+  return { buildSystem: "none", isAndroid: false };
 }
 
 /**
@@ -266,6 +319,13 @@ export async function detectLanguages(
     }
   } catch {
     // Ignore subdirectory scan errors
+  }
+
+  // Detect build system for each language
+  for (const lang of detected) {
+    const { buildSystem, isAndroid } = detectBuildSystem(directory, lang.language);
+    lang.buildSystem = buildSystem;
+    lang.isAndroid = isAndroid;
   }
 
   return detected;

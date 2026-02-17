@@ -17,12 +17,19 @@ export type SupportedLanguage =
   | "php";
 
 /**
+ * Build system used by a project
+ */
+export type BuildSystem = "gradle" | "maven" | "npm" | "go-mod" | "none";
+
+/**
  * Result of language detection
  */
 export interface DetectedLanguage {
   language: SupportedLanguage;
   confidence: "high" | "medium" | "low";
   markers: string[];
+  buildSystem?: BuildSystem;
+  isAndroid?: boolean;
 }
 
 /**

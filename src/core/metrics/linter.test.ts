@@ -15,6 +15,7 @@ import {
   parseKtlintJson,
   parseRubocopJson,
   parsePhpcsJson,
+  parseAndroidLintOutput,
 } from "./linter.js";
 import * as runner from "./runner.js";
 
@@ -316,6 +317,35 @@ describe("parsePhpcsJson", () => {
   });
 });
 
+describe("parseAndroidLintOutput", () => {
+  it("should parse N errors summary pattern", () => {
+    const output = `Ran lint on variant debug: 5 errors, 10 warnings`;
+    expect(parseAndroidLintOutput(output, "", 1)).toBe(5);
+  });
+
+  it("should parse single error", () => {
+    const output = `Ran lint on variant debug: 1 error, 3 warnings`;
+    expect(parseAndroidLintOutput(output, "", 1)).toBe(1);
+  });
+
+  it("should count Error: lines as fallback", () => {
+    const output = `
+Error: Some lint issue [LintId]
+Error: Another lint issue [LintId]
+`;
+    expect(parseAndroidLintOutput(output, "", 1)).toBe(2);
+  });
+
+  it("should return 0 for clean lint output", () => {
+    const output = `Ran lint on variant debug: 0 errors, 0 warnings`;
+    expect(parseAndroidLintOutput(output, "", 0)).toBe(0);
+  });
+
+  it("should check stderr too", () => {
+    expect(parseAndroidLintOutput("", "3 errors found", 1)).toBe(3);
+  });
+});
+
 describe("measureLintErrors", () => {
   const mockRunTool = runner.runTool as ReturnType<typeof vi.fn>;
 
@@ -456,5 +486,46 @@ describe("measureLintErrors", () => {
       cwd: "/my/project/dir",
       timeout: 120000,
     });
+  });
+
+  it("should use Android Lint for Gradle Java projects", async () => {
+    mockRunTool.mockResolvedValueOnce({
+      stdout: "Ran lint on variant debug: 3 errors, 5 warnings",
+      stderr: "",
+      exitCode: 1,
+      timedOut: false,
+    });
+
+    const result = await measureLintErrors(
+      { language: "java", confidence: "high", markers: ["build.gradle"], buildSystem: "gradle", isAndroid: true },
+      "/test/dir"
+    );
+
+    expect(mockRunTool).toHaveBeenCalledWith({
+      command: ["./gradlew", "lint"],
+      cwd: "/test/dir",
+      timeout: 180000,
+    });
+    expect(result.success).toBe(true);
+    expect(result.tool).toBe("android-lint");
+    expect(result.value).toBe(3);
+  });
+
+  it("should fall back to checkstyle for Java without Gradle", async () => {
+    mockRunTool.mockResolvedValueOnce({
+      stdout: `<?xml version="1.0"?><checkstyle></checkstyle>`,
+      stderr: "",
+      exitCode: 0,
+      timedOut: false,
+    });
+
+    const result = await measureLintErrors("java", "/test/dir");
+
+    expect(mockRunTool).toHaveBeenCalledWith(
+      expect.objectContaining({
+        command: expect.arrayContaining(["checkstyle"]),
+      })
+    );
+    expect(result.tool).toBe("checkstyle");
   });
 });

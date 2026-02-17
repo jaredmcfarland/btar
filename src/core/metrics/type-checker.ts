@@ -3,7 +3,7 @@
  * Runs type checkers (tsc, mypy, go vet) and counts errors
  */
 
-import type { SupportedLanguage } from "../types.js";
+import type { DetectedLanguage, SupportedLanguage } from "../types.js";
 import type { MetricResult, MetricParser } from "./types.js";
 import { runTool } from "./runner.js";
 
@@ -105,6 +105,21 @@ export function parseGoVetErrors(
 }
 
 /**
+ * Parse Gradle Java compilation output for error count
+ * Counts ": error:" patterns in combined output
+ */
+export function parseGradleBuildErrors(
+  stdout: string,
+  stderr: string,
+  exitCode: number
+): number {
+  if (exitCode === 0) return 0;
+  const combined = stdout + stderr;
+  const errorLines = combined.match(/: error:/g);
+  return errorLines ? errorLines.length : 0;
+}
+
+/**
  * Mapping of languages to their type checker tools
  * null means the language is dynamically typed with no standard type checker
  */
@@ -167,22 +182,63 @@ export const TYPE_CHECKER_TOOLS: Record<
 /**
  * Measure type strictness for a language by running its type checker
  *
- * @param language - Language to check
+ * @param languageOrDetected - Language string or DetectedLanguage object
  * @param directory - Project directory to check
  * @returns MetricResult with error count
- *
- * @example
- * ```ts
- * const result = await measureTypeStrictness("typescript", "/path/to/project");
- * if (result.success) {
- *   console.log(`Type errors: ${result.value}`);
- * }
- * ```
  */
 export async function measureTypeStrictness(
-  language: SupportedLanguage,
+  languageOrDetected: SupportedLanguage | DetectedLanguage,
   directory: string
 ): Promise<MetricResult> {
+  // Normalize input: accept both string and DetectedLanguage
+  const detected: DetectedLanguage | undefined =
+    typeof languageOrDetected === "string" ? undefined : languageOrDetected;
+  const language: SupportedLanguage =
+    typeof languageOrDetected === "string" ? languageOrDetected : languageOrDetected.language;
+
+  // For Gradle Java/Kotlin projects, use Gradle compilation
+  if (detected?.buildSystem === "gradle" && (language === "java" || language === "kotlin")) {
+    const command = detected.isAndroid
+      ? ["./gradlew", "compileDebugJavaWithJavac"]
+      : ["./gradlew", "compileJava"];
+
+    const result = await runTool({
+      command,
+      cwd: directory,
+      timeout: 180000, // 3 minutes for Gradle builds
+    });
+
+    if (result.exitCode === 127) {
+      return {
+        metric: "type_strictness",
+        tool: "gradle",
+        value: -1,
+        success: false,
+        raw: result.stderr || "gradlew not found",
+      };
+    }
+
+    if (result.timedOut) {
+      return {
+        metric: "type_strictness",
+        tool: "gradle",
+        value: -1,
+        success: false,
+        raw: "Gradle build timed out",
+      };
+    }
+
+    const errorCount = parseGradleBuildErrors(result.stdout, result.stderr, result.exitCode);
+
+    return {
+      metric: "type_strictness",
+      tool: "gradle",
+      value: errorCount,
+      success: true,
+      raw: result.exitCode !== 0 ? result.stdout || result.stderr : undefined,
+    };
+  }
+
   const toolConfig = TYPE_CHECKER_TOOLS[language];
 
   // Dynamic languages have no type checker

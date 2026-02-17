@@ -10,6 +10,7 @@ import {
   parseTscErrors,
   parseMypyErrors,
   parseGoVetErrors,
+  parseGradleBuildErrors,
   measureTypeStrictness,
 } from "./type-checker.js";
 
@@ -146,6 +147,29 @@ describe("parseGoVetErrors", () => {
   });
 });
 
+describe("parseGradleBuildErrors", () => {
+  it("returns 0 when exit code is 0", () => {
+    expect(parseGradleBuildErrors("BUILD SUCCESSFUL", "", 0)).toBe(0);
+  });
+
+  it("counts : error: patterns in stdout", () => {
+    const stdout = `
+/src/main/java/Foo.java:10: error: cannot find symbol
+/src/main/java/Bar.java:20: error: incompatible types
+`;
+    expect(parseGradleBuildErrors(stdout, "", 1)).toBe(2);
+  });
+
+  it("counts : error: patterns in stderr", () => {
+    const stderr = `/src/Foo.java:5: error: method not found`;
+    expect(parseGradleBuildErrors("", stderr, 1)).toBe(1);
+  });
+
+  it("returns 0 when no error patterns found on failure", () => {
+    expect(parseGradleBuildErrors("BUILD FAILED", "some other issue", 1)).toBe(0);
+  });
+});
+
 describe("measureTypeStrictness", () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -233,5 +257,69 @@ describe("measureTypeStrictness", () => {
     expect(result.success).toBe(true);
     expect(result.tool).toBe("go vet");
     expect(result.raw).toBeUndefined();
+  });
+
+  it("uses Gradle compilation for Java with gradle build system", async () => {
+    mockRunTool.mockResolvedValue({
+      stdout: "BUILD SUCCESSFUL",
+      stderr: "",
+      exitCode: 0,
+      timedOut: false,
+    });
+
+    const result = await measureTypeStrictness(
+      { language: "java", confidence: "high", markers: ["build.gradle"], buildSystem: "gradle", isAndroid: false },
+      "/my/project"
+    );
+
+    expect(mockRunTool).toHaveBeenCalledWith({
+      command: ["./gradlew", "compileJava"],
+      cwd: "/my/project",
+      timeout: 180000,
+    });
+    expect(result.tool).toBe("gradle");
+    expect(result.value).toBe(0);
+    expect(result.success).toBe(true);
+  });
+
+  it("uses Android compilation for Android Gradle projects", async () => {
+    mockRunTool.mockResolvedValue({
+      stdout: "",
+      stderr: "/Foo.java:10: error: cannot find symbol",
+      exitCode: 1,
+      timedOut: false,
+    });
+
+    const result = await measureTypeStrictness(
+      { language: "java", confidence: "high", markers: ["build.gradle"], buildSystem: "gradle", isAndroid: true },
+      "/my/project"
+    );
+
+    expect(mockRunTool).toHaveBeenCalledWith({
+      command: ["./gradlew", "compileDebugJavaWithJavac"],
+      cwd: "/my/project",
+      timeout: 180000,
+    });
+    expect(result.tool).toBe("gradle");
+    expect(result.value).toBe(1);
+    expect(result.success).toBe(true);
+  });
+
+  it("falls back to javac for Java without build system", async () => {
+    mockRunTool.mockResolvedValue({
+      stdout: "",
+      stderr: "",
+      exitCode: 0,
+      timedOut: false,
+    });
+
+    const result = await measureTypeStrictness("java", "/my/project");
+
+    expect(mockRunTool).toHaveBeenCalledWith(
+      expect.objectContaining({
+        command: expect.arrayContaining(["javac"]),
+      })
+    );
+    expect(result.tool).toBe("javac");
   });
 });

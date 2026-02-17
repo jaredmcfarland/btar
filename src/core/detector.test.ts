@@ -7,7 +7,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { detectLanguages, LANGUAGE_MARKERS } from "./detector.js";
+import { detectLanguages, detectBuildSystem, LANGUAGE_MARKERS } from "./detector.js";
 import type { BTARConfig } from "./types.js";
 
 // Default config for tests
@@ -307,5 +307,122 @@ describe("detectLanguages", () => {
 
       expect(result[0].confidence).toBe("medium");
     });
+  });
+
+  describe("build system detection", () => {
+    it("should detect Gradle build system for Java with build.gradle", async () => {
+      writeFileSync(join(tempDir, "build.gradle"), "apply plugin: 'java'");
+
+      const result = await detectLanguages(tempDir, defaultConfig);
+
+      expect(result[0].language).toBe("java");
+      expect(result[0].buildSystem).toBe("gradle");
+      expect(result[0].isAndroid).toBe(false);
+    });
+
+    it("should detect Android project with com.android.library plugin", async () => {
+      writeFileSync(
+        join(tempDir, "build.gradle"),
+        "apply plugin: 'com.android.library'"
+      );
+
+      const result = await detectLanguages(tempDir, defaultConfig);
+
+      expect(result[0].language).toBe("java");
+      expect(result[0].buildSystem).toBe("gradle");
+      expect(result[0].isAndroid).toBe(true);
+    });
+
+    it("should detect Android project with AndroidManifest.xml", async () => {
+      writeFileSync(join(tempDir, "build.gradle"), "apply plugin: 'java'");
+      mkdirSync(join(tempDir, "src", "main"), { recursive: true });
+      writeFileSync(
+        join(tempDir, "src", "main", "AndroidManifest.xml"),
+        "<manifest/>"
+      );
+
+      const result = await detectLanguages(tempDir, defaultConfig);
+
+      expect(result[0].buildSystem).toBe("gradle");
+      expect(result[0].isAndroid).toBe(true);
+    });
+
+    it("should detect Maven build system for Java with pom.xml", async () => {
+      writeFileSync(join(tempDir, "pom.xml"), "<project/>");
+
+      const result = await detectLanguages(tempDir, defaultConfig);
+
+      expect(result[0].language).toBe("java");
+      expect(result[0].buildSystem).toBe("maven");
+      expect(result[0].isAndroid).toBe(false);
+    });
+
+    it("should detect npm build system for TypeScript", async () => {
+      writeFileSync(join(tempDir, "tsconfig.json"), "{}");
+      writeFileSync(
+        join(tempDir, "package.json"),
+        JSON.stringify({ devDependencies: { typescript: "^5.0.0" } })
+      );
+
+      const result = await detectLanguages(tempDir, defaultConfig);
+
+      const tsLang = result.find((l) => l.language === "typescript");
+      expect(tsLang?.buildSystem).toBe("npm");
+    });
+
+    it("should detect go-mod build system for Go", async () => {
+      writeFileSync(join(tempDir, "go.mod"), "module example.com/foo");
+
+      const result = await detectLanguages(tempDir, defaultConfig);
+
+      expect(result[0].language).toBe("go");
+      expect(result[0].buildSystem).toBe("go-mod");
+    });
+  });
+});
+
+describe("detectBuildSystem", () => {
+  let tempDir: string;
+
+  beforeEach(() => {
+    tempDir = mkdtempSync(join(tmpdir(), "btar-buildsys-test-"));
+  });
+
+  afterEach(() => {
+    rmSync(tempDir, { recursive: true, force: true });
+  });
+
+  it("returns gradle for directory with gradlew", () => {
+    writeFileSync(join(tempDir, "gradlew"), "#!/bin/sh", { mode: 0o755 });
+    const result = detectBuildSystem(tempDir, "java");
+    expect(result.buildSystem).toBe("gradle");
+  });
+
+  it("returns maven for directory with pom.xml", () => {
+    writeFileSync(join(tempDir, "pom.xml"), "<project/>");
+    const result = detectBuildSystem(tempDir, "java");
+    expect(result.buildSystem).toBe("maven");
+  });
+
+  it("returns none for directory without build files", () => {
+    const result = detectBuildSystem(tempDir, "java");
+    expect(result.buildSystem).toBe("none");
+  });
+
+  it("returns npm for TypeScript with package.json", () => {
+    writeFileSync(join(tempDir, "package.json"), "{}");
+    const result = detectBuildSystem(tempDir, "typescript");
+    expect(result.buildSystem).toBe("npm");
+  });
+
+  it("returns go-mod for Go with go.mod", () => {
+    writeFileSync(join(tempDir, "go.mod"), "module test");
+    const result = detectBuildSystem(tempDir, "go");
+    expect(result.buildSystem).toBe("go-mod");
+  });
+
+  it("returns none for unsupported language", () => {
+    const result = detectBuildSystem(tempDir, "ruby");
+    expect(result.buildSystem).toBe("none");
   });
 });

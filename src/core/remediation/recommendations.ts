@@ -6,7 +6,7 @@
 
 import type { ScoreResult, ScoreInterpretation } from "../scoring.js";
 import type { MetricsReport } from "../metrics/index.js";
-import type { SupportedLanguage } from "../types.js";
+import type { DetectedLanguage, SupportedLanguage } from "../types.js";
 
 /**
  * Priority tier for recommendations
@@ -57,6 +57,21 @@ const LINT_FIX_TOOLS: Record<SupportedLanguage, string> = {
   ruby: "rubocop --auto-correct",
   php: "phpcbf .",
 };
+
+/**
+ * Get lint fix tool, considering build system
+ */
+function getLintFixTool(report: MetricsReport): string {
+  const lang = getPrimaryLanguage(report);
+  const primaryDetected = report.languages[0];
+
+  // For Gradle Java/Kotlin projects, use Gradle lint
+  if (primaryDetected?.buildSystem === "gradle" && (lang === "java" || lang === "kotlin")) {
+    return "./gradlew lint";
+  }
+
+  return LINT_FIX_TOOLS[lang];
+}
 
 /**
  * Check if coverage data is available in the report
@@ -115,13 +130,12 @@ function generateExcellentRecommendations(
   }
 
   if (totalLintErrors > 0) {
-    const lang = getPrimaryLanguage(report);
     recommendations.push({
       tier: "P2",
       category: "lint-errors",
       message: `Fix ${totalLintErrors} remaining lint error${totalLintErrors === 1 ? "" : "s"} for a cleaner codebase.`,
       impact: "low",
-      tool: LINT_FIX_TOOLS[lang],
+      tool: getLintFixTool(report),
     });
   }
 
@@ -143,7 +157,6 @@ function generateExcellentRecommendations(
 function generateGoodRecommendations(report: MetricsReport): Recommendation[] {
   const recommendations: Recommendation[] = [];
   const { totalTypeErrors, totalLintErrors, averageCoverage } = report.summary;
-  const lang = getPrimaryLanguage(report);
 
   // Type errors are higher priority
   if (totalTypeErrors > 0) {
@@ -162,7 +175,7 @@ function generateGoodRecommendations(report: MetricsReport): Recommendation[] {
       category: "lint-errors",
       message: `Fix ${totalLintErrors} lint error${totalLintErrors === 1 ? "" : "s"} to improve code quality.`,
       impact: "medium",
-      tool: LINT_FIX_TOOLS[lang],
+      tool: getLintFixTool(report),
     });
   }
 
@@ -204,7 +217,6 @@ function generateNeedsWorkRecommendations(
 ): Recommendation[] {
   const recommendations: Recommendation[] = [];
   const { totalTypeErrors, totalLintErrors, averageCoverage } = report.summary;
-  const lang = getPrimaryLanguage(report);
   const hasCoverage = hasCoverageData(report);
 
   // P0: Type errors are highest priority
@@ -224,7 +236,7 @@ function generateNeedsWorkRecommendations(
       category: "lint-errors",
       message: `Fix ${totalLintErrors} lint error${totalLintErrors === 1 ? "" : "s"}. Clean code is easier for AI agents to modify.`,
       impact: "high",
-      tool: LINT_FIX_TOOLS[lang],
+      tool: getLintFixTool(report),
     });
   }
 
@@ -261,7 +273,6 @@ function generateNeedsWorkRecommendations(
 function generatePoorRecommendations(report: MetricsReport): Recommendation[] {
   const recommendations: Recommendation[] = [];
   const { totalTypeErrors, totalLintErrors } = report.summary;
-  const lang = getPrimaryLanguage(report);
   const hasCoverage = hasCoverageData(report);
 
   // Foundation first - P0 for type errors
@@ -291,7 +302,7 @@ function generatePoorRecommendations(report: MetricsReport): Recommendation[] {
         category: "lint-errors",
         message: `Set up linter with auto-fix enabled. ${totalLintErrors} lint errors need attention.`,
         impact: "high",
-        tool: LINT_FIX_TOOLS[lang],
+        tool: getLintFixTool(report),
       });
     } else {
       recommendations.push({
@@ -299,7 +310,7 @@ function generatePoorRecommendations(report: MetricsReport): Recommendation[] {
         category: "lint-errors",
         message: `Fix ${totalLintErrors} lint error${totalLintErrors === 1 ? "" : "s"} to improve code quality.`,
         impact: "high",
-        tool: LINT_FIX_TOOLS[lang],
+        tool: getLintFixTool(report),
       });
     }
   }

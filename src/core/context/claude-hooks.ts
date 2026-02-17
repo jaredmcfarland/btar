@@ -59,6 +59,10 @@ export interface ClaudeHooksOptions {
   enablePostCommit?: boolean;
   /** Additional custom commands to run in post hooks */
   customCommands?: string[];
+  /** Primary language for language-specific hook commands */
+  primaryLanguage?: string;
+  /** Build system used by the project */
+  buildSystem?: string;
 }
 
 /** Default matcher for file modification tools */
@@ -94,10 +98,22 @@ export function generateClaudeHooks(options: ClaudeHooksOptions): ClaudeHooksCon
 
   // PreToolUse hooks: Run before file modifications
   if (enablePreCommit) {
+    // Select type-check command based on language and build system
+    let typeCheckCommand: string;
+    if (options.buildSystem === "gradle") {
+      typeCheckCommand = "./gradlew compileDebugJavaWithJavac";
+    } else if (options.primaryLanguage === "python") {
+      typeCheckCommand = "mypy .";
+    } else if (options.primaryLanguage === "go") {
+      typeCheckCommand = "go vet ./...";
+    } else {
+      typeCheckCommand = pathArg === "." ? "npx tsc --noEmit" : `npx tsc --noEmit --project "${pathArg}"`;
+    }
+
     const preHooks: ClaudeHook[] = [
       {
         type: "command",
-        command: pathArg === "." ? "npx tsc --noEmit" : `npx tsc --noEmit --project "${pathArg}"`,
+        command: typeCheckCommand,
       },
     ];
 

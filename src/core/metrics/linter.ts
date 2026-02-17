@@ -3,7 +3,7 @@
  * Measures lint errors across supported languages
  */
 
-import type { SupportedLanguage } from "../types.js";
+import type { DetectedLanguage, SupportedLanguage } from "../types.js";
 import type { MetricResult, MetricParser } from "./types.js";
 import { runTool } from "./runner.js";
 
@@ -222,6 +222,33 @@ export function parsePhpcsJson(
 }
 
 /**
+ * Parse Android Lint text output for error count
+ * Looks for "N errors" summary pattern in output
+ */
+export function parseAndroidLintOutput(
+  stdout: string,
+  stderr: string,
+  _exitCode: number
+): number {
+  const combined = stdout + stderr;
+
+  // Look for summary pattern: "N errors, M warnings"
+  const summaryMatch = combined.match(/(\d+)\s+errors?/);
+  if (summaryMatch) {
+    return parseInt(summaryMatch[1], 10);
+  }
+
+  // Count individual "Error:" lines
+  const errorLines = combined.match(/Error:/g);
+  if (errorLines) {
+    return errorLines.length;
+  }
+
+  // If lint ran successfully but no errors found
+  return 0;
+}
+
+/**
  * Linter tool configurations for each supported language
  */
 export const LINTER_TOOLS: Record<SupportedLanguage, LinterTool> = {
@@ -295,9 +322,54 @@ export const LINTER_TOOLS: Record<SupportedLanguage, LinterTool> = {
  * ```
  */
 export async function measureLintErrors(
-  language: SupportedLanguage,
+  languageOrDetected: SupportedLanguage | DetectedLanguage,
   directory: string
 ): Promise<MetricResult> {
+  // Normalize input
+  const detected: DetectedLanguage | undefined =
+    typeof languageOrDetected === "string" ? undefined : languageOrDetected;
+  const language: SupportedLanguage =
+    typeof languageOrDetected === "string" ? languageOrDetected : languageOrDetected.language;
+
+  // For Gradle Java/Kotlin projects, use Android Lint
+  if (detected?.buildSystem === "gradle" && (language === "java" || language === "kotlin")) {
+    const result = await runTool({
+      command: ["./gradlew", "lint"],
+      cwd: directory,
+      timeout: 180000, // 3 minutes for Gradle lint
+    });
+
+    if (result.exitCode === 127) {
+      return {
+        metric: "lint_errors",
+        tool: "android-lint",
+        value: -1,
+        success: false,
+        raw: result.stderr || "gradlew not found",
+      };
+    }
+
+    if (result.timedOut) {
+      return {
+        metric: "lint_errors",
+        tool: "android-lint",
+        value: -1,
+        success: false,
+        raw: "Android Lint timed out",
+      };
+    }
+
+    const errorCount = parseAndroidLintOutput(result.stdout, result.stderr, result.exitCode);
+
+    return {
+      metric: "lint_errors",
+      tool: "android-lint",
+      value: errorCount,
+      success: true,
+      raw: result.stdout,
+    };
+  }
+
   const linterTool = LINTER_TOOLS[language];
 
   const toolResult = await runTool({
